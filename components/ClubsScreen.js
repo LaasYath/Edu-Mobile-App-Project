@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Card, Title, Paragraph, Divider, Button, Menu } from 'react-native-paper';
+import { Card, Title, Paragraph, Divider, Button, Menu, ActivityIndicator } from 'react-native-paper';
 
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
@@ -36,75 +36,45 @@ export const ClubsScreen = () => (
 const UserClubCards = (props) => {
   console.log("inside user club cards (initial func)");
   const user = props.user;
+  const [cards, setCards] = useState(<ActivityIndicator 
+                                        animating={true} 
+                                        style={{ marginTop: 10, marginBottom: 10 }}
+  />);
   console.log("user id: " + user);
   //goes to allClubCards before executing get user club cards
-  let cardData = [];
+  
   console.log("inside get user club cards");
 
   // async func, retrives club dta from db and adds it to array
-  //does not return anything
-  //modifies cardData list decla
+  // no longer modifies cardData list decla
+  // now changes state
   async function getCardData() {
-    console.log("inside get card data");
-    //getting student information
-    const query = new Parse.Query('Student');
-    //get student object of specific id 
-    const object = await query.get(global.id);
-    //save object data to reponse
-    const response = await object.save();
-    //store user's clubs
-    const clubsList = response.get("clubs");
-    console.log("clubs list(id form)" + clubsList);
+    const cardData = await getUserClubCards();
 
-    let name = "";
-    let descrip = "";
-    let cover = "";
-    let x;
+    const cards = cardData.map((step, move) => {
+      return (
+        <View key={move}>
+          <ClubCard clubData={step} />
+        </View>
+      );
+    });
 
-    //gets club information
-    const query2 = new Parse.Query('Clubs');
-
-    for (let i = 0; i< clubsList.length; i++) {
-      console.log("inside loop of get card data (clubs)");
-      //gets club based on id
-      let clubId = clubsList[i];
-      const object2 = await query2.get(clubId); 
-      //save club info
-      const response2 = await object2.save();
-      name = response2.get("name");
-      console.log("name" + name);
-      descrip = response2.get("descrip");
-      console.log("descrip" +  descrip);
-      cover = response2.get("cover");
-      console.log("cover" +  cover);
-      x = {
-        clubTitle: name,
-        clubDescription: descrip,
-        clubCover: cover,
-      }
-      //add club map to array
-      cardData.push(x);
-      console.log("map - x(club info): " + x);
-      console.log("array - cardData(array of club info):" + cardData);
-
-    }
-
+    setCards(<View>{cards}</View>);
   }
-  getCardData();
-  const cardsData = cardData;
 
-  console.log("cardData: " + cardsData);
-
-  const cards = cardsData.map((step, move) => {
-    return (
-      <View key={move}>
-        <ClubCard clubData={step} />
-      </View>
-    )
-  });
+  // react version of promises
+  // first argument is async function to execute (changing a state)
+  // second argument is array of variables to watch, then will
+  //   execute again if one of those variables is changed.
+  // warning: unwatched promises, idk how to fix
+  useEffect(() => {
+    getCardData();
+  }, []);
 
   return (
-    <View>{cards}</View>
+    <View>
+      {cards}
+    </View>
   );
 }
 
@@ -125,7 +95,8 @@ const AllClubCards = () => {
   );
 }
 
-function getUserClubCards(user) {
+// can just turn entire helper func into async
+async function getUserClubCards() {
   /* implement getting all user clubs */
   /* RETURN FORMAT: [{
     clubTitle: str,
@@ -135,60 +106,52 @@ function getUserClubCards(user) {
   (clubCover - can be URL or path (aka URI))
   */
   let cardData = [];
-  console.log("inside get user club cards");
-  // async fun, runs automatically
-  async function getCardData() {
-    console.log("inside get card data");
-    //getting student information
-    const query = new Parse.Query('Student');
-    //get student object of specific id 
-    const object = await query.get(global.id);
-    //save object data to reponse
-    const response = await object.save();
-    //store user's clubs
-    const clubsList = response.get("clubs");
-    console.log("clubs list(id form)" + clubsList);
+  console.log("inside get card data");
+  //getting student information
+  const query = new Parse.Query('Student');
+  //get student object of specific id 
+  const object = await query.get(global.id);
+  //save object data to reponse
+  const response = await object.save();
+  //store user's clubs
+  const clubsList = response.get("clubs");
+  console.log("clubs list(id form)" + clubsList);
 
-    let name = "";
-    let descrip = "";
-    let cover = "";
-    let x;
+  let name = "";
+  let descrip = "";
+  let cover = "";
+  let x;
 
-    //gets club information
-    const query2 = new Parse.Query('Clubs');
+  //gets club information
+  const query2 = new Parse.Query('Clubs');
 
-    for (let i = 0; i< clubsList.length; i++) {
-      console.log("inside loop of get card data (clubs)");
-      //gets club based on id
-      let clubId = clubsList[i];
-      const object2 = await query2.get(clubId); 
-      //save club info
-      const response2 = await object2.save();
-      name = response2.get("name");
-      console.log("name" + name);
-      descrip = response2.get("descrip");
-      console.log("descrip" +  descrip);
-      cover = response2.get("cover");
-      console.log("cover" +  cover);
-      x = {
-        clubTitle: name,
-        clubDescription: descrip,
-        clubCover: cover,
-      }
-      //add club map to array
-      cardData.push(x);
-      console.log("map - x(club info): " + x);
-      console.log("array - cardData(array of club info):" + cardData);
-
+  for (let i = 0; i< clubsList.length; i++) {
+    console.log("inside loop of get card data (clubs)");
+    //gets club based on id
+    let clubId = clubsList[i];
+    const object2 = await query2.get(clubId); 
+    //save club info
+    const response2 = await object2.save();
+    name = response2.get("name");
+    console.log("name" + name);
+    descrip = response2.get("descrip");
+    console.log("descrip" +  descrip);
+    cover = response2.get("cover");
+    console.log("cover" +  cover);
+    x = {
+      clubTitle: name,
+      clubDescription: descrip,
+      clubCover: cover,
     }
-
+    //add club map to array
+    cardData.push(x);
+    console.log("map - x(club info): " + x);
+    console.log("array - cardData(array of club info):" + cardData);
   }
 
-
-  getCardData();
-
-  // at the end, includes all clubs/maps
+  console.log(cardData);
   return cardData;
+  // at the end, includes all clubs/maps
 }
 
 function getAllClubCards() {
