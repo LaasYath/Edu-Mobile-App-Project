@@ -46,6 +46,7 @@ export const LoginScreen = (props) => {
         label="Password"
         value={passwordText}
         onChangeText={text => setPasswordText(text)}
+        secureTextEntry={true}
       />
       <View style={styles.button}>
         <Button
