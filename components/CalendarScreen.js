@@ -1,11 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Calendar } from 'react-native-calendars';
+
+// https://www.educba.com/react-native-calendar/
+// https://www.reactnativeschool.com/how-to-use-react-native-calendar
 
 export const CalendarScreen = (props) => {
   return(
-    <View style={styles.layout}>
-      <Text style={styles.texts}>
-        Calendar
-      </Text>
+    <View>
+      <Calendar />
     </View>
   );
 }
@@ -15,9 +17,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  texts: {
-    fontSize: 32,
-    marginBottom: 16,
-  },
+  }
 });
