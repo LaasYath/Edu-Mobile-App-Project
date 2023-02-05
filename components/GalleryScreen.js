@@ -28,7 +28,6 @@ const ImageList = (props) => {
   async function getImages(filter) {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
     const imgs = await getFilteredImages(filter);
-    console.log(imgs.length);
 
     const imgComponents = imgs.map((step, move) => {
       return (
