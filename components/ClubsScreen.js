@@ -53,9 +53,7 @@ const UserClubCards = (props) => {
 
     const cards = cardData.map((step, move) => {
       return (
-        <View key={move}>
-          <ClubCard clubData={step} />
-        </View>
+        <ClubCard key={move} clubData={step} />
       );
     });
 

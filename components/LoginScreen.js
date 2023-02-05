@@ -60,7 +60,7 @@ export const LoginScreen = (props) => {
               try {
                 for (const object of results) {
                   // Access the Parse Object attributes using the .GET method
-                  const id = object.get('stuID');
+                  const id = object.get('uID');
                   if (id == IDText) {
                     const passwordHash = object.get('passwordHash')
                     JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
@@ -77,7 +77,6 @@ export const LoginScreen = (props) => {
             }
 
             Authenticate();
-            
             
           }}
         />
