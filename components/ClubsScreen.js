@@ -33,6 +33,46 @@ export const ClubsScreen = () => (
     /*}/>
 */
 
+const UserClubCards = (props) => {
+  const user = props.user;
+  const [cards, setCards] = useState(<ActivityIndicator 
+                                        animating={true} 
+                                        style={{ marginTop: 10, marginBottom: 10 }}
+  />);
+  //goes to allClubCards before executing get user club cards
+  
+
+  // async func, retrives club dta from db and adds it to array
+  // no longer modifies cardData list decla
+  // now changes state
+  async function getCardData() {
+    const cardData = await getUserClubCards();
+
+    const cards = cardData.map((step, move) => {
+      return (
+        <ClubCard key={move} clubData={step} />
+      );
+    });
+
+    setCards(<View>{cards}</View>);
+  }
+
+  // react version of promises
+  // first argument is async function to execute (changing a state)
+  // second argument is array of variables to watch, then will
+  //   execute again if one of those variables is changed.
+  // warning: unwatched promises, idk how to fix
+  useEffect(() => {
+    getCardData();
+  }, []);
+
+  return (
+    <View>
+      {cards}
+    </View>
+  );
+}
+
 const AllClubCards = () => {
   // const cardsData = getAllClubCards();
   const [cards, setCards] = useState(<ActivityIndicator 
