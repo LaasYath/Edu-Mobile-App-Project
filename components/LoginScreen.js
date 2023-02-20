@@ -19,13 +19,12 @@ Parse.serverURL = 'https://parseapi.back4app.com/';
 
 (async () => {
   global.id = "";
-  global.district = "";
-  console.log("in login screen");
+  global.school = "";
 })
 
 export const LoginScreen = (props) => {
   const { setUser } = useContext(AuthContext);
-  const [districtText, setDistrictText] = useState("");
+  const [schoolText, setSchoolText] = useState("");
   const [IDText, setIDText] = useState("");
   const [passwordText, setPasswordText] = useState("");
 
@@ -35,9 +34,9 @@ export const LoginScreen = (props) => {
         Login
       </Text>
       <TextInput style={styles.textInput}
-        label="District"
-        value={districtText}
-        onChangeText={text => setDistrictText(sanitize(text))}
+        label="School"
+        value={schoolText}
+        onChangeText={text => setSchoolText(sanitize(text))}
       />
       <TextInput style={styles.textInput}
         label="ID"
@@ -55,10 +54,11 @@ export const LoginScreen = (props) => {
           title="Go!"
           onPress={() => {
             async function Authenticate() {
-              if (districtText == "" || passwordText == "" || IDText == "") {
+              if (schoolText == "" || passwordText == "" || IDText == "") {
                 alert("Please fill in all fields to login.");
               } else {
-                const User = Parse.Object.extend(districtText);
+                let schoolClassName = schoolText.replace(/\s/g, "");
+                const User = Parse.Object.extend(schoolClassName);
                 const query = new Parse.Query(User);
                 const results = await query.find();
 
@@ -71,7 +71,7 @@ export const LoginScreen = (props) => {
                       JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
                         .then(hash => {if (passwordHash == hash) {
                                         global.id = object.id;
-                                        global.district = districtText;
+                                        global.school = schoolClassName;
                                         setUser(true);
                         }})
                         .catch(e => console.log(e));

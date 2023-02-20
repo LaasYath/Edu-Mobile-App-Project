@@ -92,7 +92,7 @@ const AllClubCards = () => {
      */  
      let name = "", descrip = "", cover = "", x;
  
-     let search = global.district + "Clubs";
+     let search = global.school + "Clubs";
      const Clubs = new Parse.Object.extend(search);
      const queryClubs = new Parse.Query(Clubs);
      const results = await queryClubs.find();
@@ -149,7 +149,7 @@ async function getUserClubCards() {
   */
   let cardData = [];
   //getting student information
-  let searchUser = global.district;
+  let searchUser = global.school;
   const queryStudent = new Parse.Query(searchUser);
   //get student object of specific id 
   const objectStudent = await queryStudent.get(global.id);
@@ -165,7 +165,7 @@ async function getUserClubCards() {
   let x;
 
   //gets club information
-  let searchField = global.district + "Clubs";
+  let searchField = global.school + "Clubs";
   const searchClub = Parse.Object.extend(searchField);
   const query = new Parse.Query(searchClub);
   const results = await query.find();
