@@ -19,6 +19,8 @@ Parse.serverURL = 'https://parseapi.back4app.com/';
 
 (async () => {
   global.id = "";
+  global.district = "";
+  console.log("in login screen");
 })
 
 export const LoginScreen = (props) => {
@@ -35,17 +37,17 @@ export const LoginScreen = (props) => {
       <TextInput style={styles.textInput}
         label="District"
         value={districtText}
-        onChangeText={text => setDistrictText(text)}
+        onChangeText={text => setDistrictText(sanitize(text))}
       />
       <TextInput style={styles.textInput}
         label="ID"
         value={IDText}
-        onChangeText={text => setIDText(text)}
+        onChangeText={text => setIDText(sanitize(text))}
       />
       <TextInput style={styles.textInput}
         label="Password"
         value={passwordText}
-        onChangeText={text => setPasswordText(text)}
+        onChangeText={text => setPasswordText(sanitize(text))}
         secureTextEntry={true}
       />
       <View style={styles.button}>
@@ -53,29 +55,34 @@ export const LoginScreen = (props) => {
           title="Go!"
           onPress={() => {
             async function Authenticate() {
-              const Student = Parse.Object.extend('Student');
-              const query = new Parse.Query(Student);
-              const results = await query.find();
+              if (districtText == "" || passwordText == "" || IDText == "") {
+                alert("Please fill in all fields to login.");
+              } else {
+                const User = Parse.Object.extend(districtText);
+                const query = new Parse.Query(User);
+                const results = await query.find();
 
-              try {
-                for (const object of results) {
-                  // Access the Parse Object attributes using the .GET method
-                  const id = object.get('uID');
-                  if (id == IDText) {
-                    const passwordHash = object.get('passwordHash')
-                    JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
-                      .then(hash => {if (passwordHash == hash) {
-                                      global.id = object.id;
-                                      setUser(true);
-                      }})
-                      .catch(e => console.log(e));
+                try {
+                  for (const object of results) {
+                    // Access the Parse Object attributes using the .GET method
+                    const id = object.get('uID');
+                    if (id == IDText) {
+                      const passwordHash = object.get('passwordHash')
+                      JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
+                        .then(hash => {if (passwordHash == hash) {
+                                        global.id = object.id;
+                                        global.district = districtText;
+                                        setUser(true);
+                        }})
+                        .catch(e => console.log(e));
+                    }
                   }
+                } catch (error) {
+                  console.error('Error while fetching Student', error);
                 }
-              } catch (error) {
-                console.error('Error while fetching Student', error);
               }
-            }
 
+            }
             Authenticate();
             
           }}
@@ -83,6 +90,20 @@ export const LoginScreen = (props) => {
       </View>
     </View>
   );
+}
+
+//cleans data (automatically deltes special characters while the user is typing)
+function sanitize(string) {
+  const map = {
+      '&': '',
+      '<': '',
+      '>': '',
+      '"': '',
+      "'": '',
+      "/": '',
+  };
+  const reg = /[&<>"'/]/ig;
+  return string.replace(reg, (match)=>(map[match]));
 }
 
 const styles = StyleSheet.create({

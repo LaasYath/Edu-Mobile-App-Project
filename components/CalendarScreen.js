@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Title } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
 // https://www.educba.com/react-native-calendar/
@@ -7,7 +7,7 @@ import { Calendar } from 'react-native-calendars';
 export const CalendarScreen = (props) => {
   return(
     <View>
-      <Calendar />
+      <Calendar></Calendar>
     </View>
   );
 }
