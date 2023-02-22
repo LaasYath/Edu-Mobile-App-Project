@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Card, Title, Paragraph, Divider, Button, Menu, ActivityIndicator } from 'react-native-paper';
+import { Card, Title, Paragraph, Divider, Button, Menu, ActivityIndicator, IconButton } from 'react-native-paper';
 
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
@@ -19,7 +19,7 @@ export const ClubsScreen = () => (
 
     <View style={styles.allClubsHeader}>
       <View style={{ flex: 2 }}><Title style={styles.title}>Browse</Title></View>
-      <View style={{ flex: 1 }}><MiniMenu /></View>
+      <View style={{ flex: 1 }}><FilterMenu /></View>
     </View>
     <Divider bold={true} horizontalInset={true} />
     <AllClubCards />
@@ -40,7 +40,6 @@ const UserClubCards = (props) => {
                                         style={{ marginTop: 10, marginBottom: 10 }}
   />);
   //goes to allClubCards before executing get user club cards
-  
 
   // async func, retrives club dta from db and adds it to array
   // no longer modifies cardData list decla
@@ -78,64 +77,63 @@ const AllClubCards = () => {
   const [cards, setCards] = useState(<ActivityIndicator 
                                          animating={true} 
                                          style={{ marginTop: 10, marginBottom: 10 }}
-   />);
-   let cardData = [];
+  />);
+  let cardData = [];
  
   async function getAllClubCards() {
-     /* implement getting all clubs */
-     /* RETURN FORMAT: [{
-       clubTitle: str,
-       clubDescription: str,
-       clubCover: str,
-     }...]
-     (clubCover - can be URL or path (aka URI))
-     */  
-     let name = "", descrip = "", cover = "", x;
- 
-     let search = global.school + "Clubs";
-     const Clubs = new Parse.Object.extend(search);
-     const queryClubs = new Parse.Query(Clubs);
-     const results = await queryClubs.find();
-     try {
-       for (const club of results) {
-         //retrieve info
-         name = club.get("name");
-         descrip = club.get("descrip");
-         cover = club.get("cover");
- 
-         x = {
-           clubTitle: name,
-           clubDescription: descrip,
-           clubCover: cover,
-         }
-         //add club map to array
-         cardData.push(x);
-       }
-     } catch (error) {
-       console.error('Error while fetching Clubs', error);
-     }
- 
-     //return cardData;
-     const cards = cardData.map((step, move) => {
-       return (
-         <ClubCard key={move} clubData={step} />
-       );
-     });
- 
-     setCards(<View>{cards}</View>);
-   }
- 
-   useEffect(() => {
-     getAllClubCards();
-   }, []);
- 
-   return (
-     <View>
-       {cards}
-     </View>
-   );
- 
- }
+    /* implement getting all clubs */
+    /* RETURN FORMAT: [{
+      clubTitle: str,
+      clubDescription: str,
+      clubCover: str,
+    }...]
+    (clubCover - can be URL or path (aka URI))
+    */  
+    let name = "", descrip = "", cover = "", x;
+
+    let search = global.school + "Clubs";
+    const Clubs = new Parse.Object.extend(search);
+    const queryClubs = new Parse.Query(Clubs);
+    const results = await queryClubs.find();
+    try {
+      for (const club of results) {
+        //retrieve info
+        name = club.get("name");
+        descrip = club.get("descrip");
+        cover = club.get("cover");
+
+        x = {
+          clubTitle: name,
+          clubDescription: descrip,
+          clubCover: cover,
+        }
+        //add club map to array
+        cardData.push(x);
+      }
+    } catch (error) {
+      console.error('Error while fetching Clubs', error);
+    }
+
+    //return cardData;
+    const cards = cardData.map((step, move) => {
+      return (
+        <ClubCard key={move} clubData={step} />
+      );
+    });
+
+    setCards(<View>{cards}</View>);
+  }
+
+  useEffect(() => {
+    getAllClubCards();
+  }, []);
+
+  return (
+    <View>
+      {cards}
+    </View>
+  );
+}
 
 // can just turn entire helper func into async
 async function getUserClubCards() {
@@ -190,16 +188,16 @@ async function getUserClubCards() {
   // at the end, includes all user's clubs/maps
 }
 
-
 const ClubCard = (props) => {
   const clubInfo = props.clubData;
 
-  console.log("inside club" + clubInfo.clubTitle);
-
   return (
     <Card style={styles.card}>
+      <Card.Title 
+        title={clubInfo.clubTitle}
+        right={(props) => <ClubOptionsMenu {...props} clubData={clubInfo} />}
+      />
       <Card.Content>
-        <Title>{clubInfo.clubTitle}</Title>
         <Paragraph>{clubInfo.clubDescription}</Paragraph>
       </Card.Content>
       <Card.Cover source={{ uri: clubInfo.clubCover }}/>
@@ -207,7 +205,33 @@ const ClubCard = (props) => {
   );
 }
 
-const MiniMenu = () => {
+const ClubOptionsMenu = (props) => {
+  const clubInfo = props.clubData;
+  const [visible, setVisible] = useState(false);
+
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+
+  // TODO: Implement social media sharing
+  const share = () => {
+    console.log(`Shared ${clubInfo.clubTitle} on social media!`);
+    closeMenu();
+  }
+
+  return (
+    <View style={styles.menuContainer}>
+      <Menu 
+        visible={visible}
+        onDismiss={closeMenu}
+        anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
+      >
+        <Menu.Item onPress={share} title='Share' />
+      </Menu>
+    </View>
+  )
+}
+
+const FilterMenu = () => {
   const [visible, setVisible] = useState(false);
   const [filter, setFilter] = useState("Filter...");
 

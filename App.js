@@ -7,7 +7,6 @@ import { AuthHelper } from './components/AuthHelper.js';
 
 export default function App() {
   const [hasUser, setUser] = useState(false);
-  console.log("wnet through app");
 
   return (
     <AuthContext.Provider value={{ hasUser, setUser }}>
