@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "EduApp",
-    "slug": "EduApp",
+    "name": "EduMedia",
+    "slug": "EduMedia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +18,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "This app would like to save images to your device",
+        "NSPhotoLibraryUsageDescription": "This app would like to save images to your device"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -28,6 +32,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow EduMedia access to your library.",
+          "savePhotosPermission": "Allow EduMedia to save photos to library.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ]
   }
 }

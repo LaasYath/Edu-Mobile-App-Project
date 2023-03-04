@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { useState, useEffect, React } from 'react';
+import { StyleSheet, View, ScrollView, Share, Linking } from 'react-native';
 import { Card, Title, Paragraph, Divider, Button, Menu, ActivityIndicator, IconButton } from 'react-native-paper';
+
+import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
@@ -155,7 +158,6 @@ async function getUserClubCards() {
   const responseStudent = await objectStudent.save();
   //store user's clubs
   const clubsList = responseStudent.get("clubs");
-  console.log(clubsList);
 
   let name = "";
   let descrip = "";
@@ -212,10 +214,68 @@ const ClubOptionsMenu = (props) => {
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
-  // TODO: Implement social media sharing
-  const share = () => {
-    console.log(`Shared ${clubInfo.clubTitle} on social media!`);
+  const share = async() => {
+    let uri = clubInfo.clubCover;
+
+    //better on ios (faster)
+    if (Sharing.isAvailableAsync()) {
+      const result = await Share.share(
+        {
+          //shares link to poster (base64 representation is way too long)
+          title: clubInfo.clubName + "\'s Club Poster",
+          url: uri,
+        },
+        {
+          excludedActivityTypes: [
+            //makes app laod faster by taking away airdrop option
+            'com.apple.UIK.activity.AirDrop',
+          ]
+        }
+      );
+
+      //success message if user shared an image
+      if (result.action === Share.sharedAction) {
+        alert("Shared successfully");
+      } 
+    }
+
     closeMenu();
+  }
+
+
+  const linkToInsta = async() => {
+    //saves picture to user's camera roll
+    await savePhotoForInsta();
+    /*
+    takes user to instagram, shares most recent pic in camera roll (facebook has mo built in hooks/deep linking 
+    to share pictures that aren't in the user's library or already posted)
+    */
+    const instagramURL = `instagram://library?AssetPath=""`;
+    return Linking.openURL(instagramURL);
+  
+  }
+
+  const savePhotoForInsta = async() => {
+    //image address for club poster
+    const uri = clubInfo.clubCover;
+
+    // gets permissions to user's camera roll
+    const permissionResponse = await MediaLibrary.requestPermissionsAsync();
+
+    //if permissions have been granted
+    if (permissionResponse.granted) {
+      //returns a null object, but event has successfully been completed
+      await MediaLibrary.saveToLibraryAsync(uri);
+      return true;
+    }
+  }
+
+  //adds an alert when photo is saved
+  const savePhoto = async() => {
+    const checkPermissions = savePhotoForInsta();
+    if(checkPermissions) {
+      alert("Poster has been saved to camera roll.");
+    }
   }
 
   return (
@@ -226,6 +286,8 @@ const ClubOptionsMenu = (props) => {
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
         <Menu.Item onPress={share} title='Share' />
+        <Menu.Item onPress={savePhoto} title='Save Poster' />
+        <Menu.Item onPress={share} title='Options' />
       </Menu>
     </View>
   )
