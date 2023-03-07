@@ -1,21 +1,101 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, View, Image } from 'react-native';
-import { Menu, Button, ActivityIndicator } from 'react-native-paper';
+import { Menu, Button, ActivityIndicator, Card, IconButton, Text, Appbar } from 'react-native-paper';
 
 export const GalleryScreen = (props) => {
+  const loading = <ActivityIndicator 
+    animating={true} 
+    style={{ marginTop: 10, marginBottom: 10 }}
+  />;
+
+  const [displayScreen, setDisplayScreen] = useState(<View>{loading}</View>);
+
+  const setClubs = async () => {
+    const clubs = await getClubs();
+    console.log(clubs);
+    
+    const cards = clubs.map((step, move) => {
+      return (
+      <GalleryCard 
+        subject={step}
+        onPress={() => setDisplayScreen(
+          <Gallery 
+            club={step}
+            goBack={() => setDisplayScreen(<View>{cards}</View>)}
+          />
+        )}
+        key={move}
+      />);
+    });
+
+    setDisplayScreen(<View>{cards}</View>);
+  }
+
+  useEffect(() => {
+    setClubs();
+  }, []);
+
+  return (
+    <ScrollView>
+      {displayScreen}
+    </ScrollView>
+  )
+}
+
+const GalleryCard = props => {
+  const subject = props.subject;
+  const onPress = props.onPress;
+
+  return (
+    <Card>
+      <Card.Title 
+        title={subject}
+        right={props => <IconButton icon="arrow-right-drop-circle" onPress={onPress} />}
+      />
+    </Card>
+  )
+}
+
+/**
+ * TODO: Implement async getClubs()
+ * 
+ * return array of club names
+ */
+const getClubs = async () => {
+  let ret = [
+    'FBLA',
+    'Chess Club',
+  ];
+
+  return await new Promise((res) => setTimeout(() => res(ret), 1000));
+}
+
+/**
+ * TODO: Implement looking up images
+ * based on props.club
+ */
+const Gallery = props => {
   const [filter, setFilter] = useState("Favorite");
+  const club = props.club;
+  const goBack = props.goBack;
 
   const selectFilter = (selectedFilter) => {
     setFilter(selectedFilter);
   }
 
   return(
-    <ScrollView>
-      <View style={styles.layout}>
-        <MiniMenu filter={filter} selectFilter={selectFilter} />
-      </View>
-      <ImageList filter={filter}/>
-    </ScrollView>
+    <View>
+      <Appbar.Header statusBarHeight={0}>
+        <Appbar.BackAction onPress={goBack} />
+        <Appbar.Content title={club} />
+      </Appbar.Header>
+      <ScrollView>
+        <View style={styles.layout}>
+          <MiniMenu filter={filter} selectFilter={selectFilter} />
+        </View>
+        <ImageList filter={filter}/>
+      </ScrollView>
+    </View>
   );
 }
 
