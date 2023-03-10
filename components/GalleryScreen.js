@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, View, Image } from 'react-native';
-import { Menu, Button, ActivityIndicator, Card, IconButton, Text, Appbar } from 'react-native-paper';
+import { Menu, Button, ActivityIndicator, Card, IconButton, Text, Divider, Appbar } from 'react-native-paper';
 
 export const GalleryScreen = (props) => {
   const loading = <ActivityIndicator 
@@ -11,24 +11,21 @@ export const GalleryScreen = (props) => {
   const [displayScreen, setDisplayScreen] = useState(<View>{loading}</View>);
 
   const setClubs = async () => {
-    const clubs = await getClubs();
-    console.log(clubs);
-    
-    const cards = clubs.map((step, move) => {
-      return (
-      <GalleryCard 
-        subject={step}
-        onPress={() => setDisplayScreen(
-          <Gallery 
-            club={step}
-            goBack={() => setDisplayScreen(<View>{cards}</View>)}
-          />
-        )}
-        key={move}
-      />);
-    });
+    const results = await getClubs();
+    const clubs = results.map((step, move) => step.name);
+    const resetToGalleryMainSubScreen = () => setDisplayScreen(<GalleryMainSubScreen 
+      data={results}
+      display={setDisplayScreen}
+      goBack={resetToGalleryMainSubScreen}
+    />);
 
-    setDisplayScreen(<View>{cards}</View>);
+    console.log(clubs);
+
+    setDisplayScreen(<GalleryMainSubScreen 
+      data={results}
+      display={setDisplayScreen}
+      goBack={resetToGalleryMainSubScreen}
+    />)
   }
 
   useEffect(() => {
@@ -36,8 +33,47 @@ export const GalleryScreen = (props) => {
   }, []);
 
   return (
-    <ScrollView>
+    <View>
       {displayScreen}
+    </View>
+  )
+}
+
+const GalleryMainSubScreen = props => {
+  const data = props.data;
+  const display = props.display;
+  const goBack = props.goBack;
+
+  const cards = data.map((step, move) => {
+    return ([
+      <GalleryCard 
+        subject={step.name}
+        onPress={() => display(
+          <Gallery 
+            club={step.name}
+            goBack={goBack}
+          />
+        )}
+        key={move}
+      />, step.owned]);
+  });
+
+  const ownedCards = cards.filter(card => card[1]).map((step, move) => step[0]);
+  const allCards = cards.filter(card => card[0]).map((step, move) => step[0]);
+  
+  return (
+    <ScrollView>
+      <Text variant={'titleLarge'} style={styles.categoryTitle}>My Clubs</Text>
+      <Divider style={styles.divider} bold={true}/>
+      <View>
+        {ownedCards}
+      </View>
+
+      <Text variant={'titleLarge'} style={styles.categoryTitle}>Browse</Text>
+      <Divider style={styles.divider} bold={true}/>
+      <View>
+        {allCards}
+      </View>
     </ScrollView>
   )
 }
@@ -47,7 +83,7 @@ const GalleryCard = props => {
   const onPress = props.onPress;
 
   return (
-    <Card>
+    <Card style={styles.card}>
       <Card.Title 
         title={subject}
         right={props => <IconButton icon="arrow-right-drop-circle" onPress={onPress} />}
@@ -59,25 +95,40 @@ const GalleryCard = props => {
 /**
  * TODO: Implement async getClubs()
  * 
- * return array of club names
+ * return array of objects
+ * [
+ * {
+ *  name: str,
+ *  owned: boolean,
+ * },..
+ * ]
  */
 const getClubs = async () => {
   let ret = [
-    'FBLA',
-    'Chess Club',
+    {
+      name: 'FBLA',
+      owned: true,
+    },
+    {
+      name: 'Chess Club',
+      owned: false,
+    },
   ];
 
   return await new Promise((res) => setTimeout(() => res(ret), 1000));
 }
 
 /**
- * TODO: Implement looking up images
- * based on props.club
+ * TODO: Implement adding image to gallery
  */
 const Gallery = props => {
   const [filter, setFilter] = useState("Favorite");
   const club = props.club;
   const goBack = props.goBack;
+  
+  const addImage = () => {
+    console.log(`image added to ${club}!`)
+  }
 
   const selectFilter = (selectedFilter) => {
     setFilter(selectedFilter);
@@ -88,12 +139,13 @@ const Gallery = props => {
       <Appbar.Header statusBarHeight={0}>
         <Appbar.BackAction onPress={goBack} />
         <Appbar.Content title={club} />
+        <Appbar.Action icon={'plus'} onPress={() => addImage()} />
       </Appbar.Header>
       <ScrollView>
         <View style={styles.layout}>
           <MiniMenu filter={filter} selectFilter={selectFilter} />
         </View>
-        <ImageList filter={filter}/>
+        <ImageList club={club} filter={filter}/>
       </ScrollView>
     </View>
   );
@@ -105,15 +157,18 @@ const ImageList = (props) => {
                                           style={{ marginTop: 10, marginBottom: 10 }}
   />);
 
+  const club = props.club;
+
   async function getImages(filter) {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
-    const imgs = await getFilteredImages(filter);
+    const data = await getFilteredImages(club, filter);
 
-    const imgComponents = imgs.map((step, move) => {
+    const imgComponents = data.map((step, move) => {
       return (
-        <Image 
-          style={[styles.img]}
+        <ImageCard 
           source={{ uri: step.src }}
+          postedBy={step.postedBy}
+          caption={step.caption}
           key={move}
         />
       )
@@ -132,11 +187,11 @@ const ImageList = (props) => {
       imgMatrix[row] = <View style={styles.imgRowLayout} key={row}>{imgRow}</View>;
     }
 
-    setImages(<View>{imgMatrix}</View>);
+    setImages(<View style={styles.imgMatrixLayout}>{imgMatrix}</View>);
   }
 
   // see ClubsScreen.js for explanation
-  // need to observe props.filter because images should change when that filter is change
+  // need to observe props.filter because images should change when that filter is changed
   useEffect(() => {
     getImages(props.filter);
   }, [props.filter])
@@ -148,30 +203,65 @@ const ImageList = (props) => {
   );
 }
 
+const ImageCard = props => {
+  const source = props.source.uri;
+  const postedBy = props.postedBy;
+  const caption = props.caption;
+
+  return (
+    <Card style={styles.imgCard}>
+      <Card.Cover source={{ uri: source }}/>
+      <Card.Content style={styles.imgCardContent}>
+        <Text variant={'bodySmall'} style={styles.imgCardText}>Posted by: {postedBy}</Text>
+        <Text variant={'bodySmall'} style={styles.imgCardText}>{caption}</Text>
+      </Card.Content>
+    </Card>
+  );
+}
+
 // TODO: Implement backend
-async function getFilteredImages(filter) {
+async function getFilteredImages(club, filter) {
   /* RETURN FORMAT: [{
     src: str
+    postedBy: str
+    caption: str
   }...]
   */
-  let ret;
+  let clubSrc;
+  switch(club) {
+    case "FBLA":
+      clubSrc = 'https://picsum.photos/110/110';
+      break;
+
+    case "Chess Club": 
+      clubSrc = 'https://picsum.photos/90/90';
+      break;
+
+    default:
+      clubSrc = 'https://picsum.photos/100/100';
+      break;
+  }
+
+  let ret = {postedBy: 'n/a', caption: 'Caption!'};
   switch (filter) {
     case "Favorite":
-      ret = Array(2).fill({ src: 'https://picsum.photos/100/100' });
+      ret = Array(2).fill({ ...ret, src: clubSrc });
       break;
       
     case "School":
-      ret = Array(25).fill({ src: 'https://picsum.photos/100/100' });
+      ret = Array(25).fill({ ...ret, src: clubSrc });
       break;
 
     case "Club 1":
-      ret = Array(9).fill({ src: 'https://picsum.photos/100/100' });
+      ret = Array(9).fill({ ...ret, src: clubSrc });
       break;
 
     case "Club 2":
-      ret = Array(50).fill({ src: 'https://picsum.photos/100/100' });
+      ret = Array(50).fill({ ...ret, src: clubSrc });
       break;
   }
+
+  ret = ret.map(r => ({...r, postedBy: 'A'.repeat(Math.floor(Math.random() * 100))}));
 
   const promise = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -248,6 +338,7 @@ const MiniMenuOption = (props) => {
 }
 
 // TODO: Implement backend connection
+// may just use preset filters or remove altogether... ?
 async function getUserClubOptions() {
   /* RETURN FORMAT:
   [
@@ -270,11 +361,26 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
+  categoryTitle: {
+    margin: 15,
+  },
+  divider: {
+    marginLeft: 30,
+    marginRight: 30,
+    marginBottom: 10,
+  },
+  card: {
+    marginLeft: 15,
+    marginRight: 15,
+    marginBottom: 5,
+  },
+  imgMatrixLayout: {
+    marginBottom: 150,
+  },
   imgRowLayout: { 
     flex: 1, 
     flexDirection: "row", 
     width: "100%",
-    height: 120,
   },
   menuContainer: {
     flex: 1,
@@ -287,10 +393,16 @@ const styles = StyleSheet.create({
   menuItem: {
     
   },
-  img: {
+  imgCard: {
     flex: 1,
     padding: 5,
     margin: 5,
+  },
+  imgCardContent: {
+    marginTop: 10,
+  },
+  imgCardText: {
+    marginTop: 5,
   },
   imgHolder: {
     flex: 1,
