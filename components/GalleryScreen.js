@@ -161,13 +161,14 @@ const ImageList = (props) => {
 
   async function getImages(filter) {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
-    const imgs = await getFilteredImages(club, filter);
+    const data = await getFilteredImages(club, filter);
 
-    const imgComponents = imgs.map((step, move) => {
+    const imgComponents = data.map((step, move) => {
       return (
-        <Image 
-          style={[styles.img]}
+        <ImageCard 
           source={{ uri: step.src }}
+          postedBy={step.postedBy}
+          caption={step.caption}
           key={move}
         />
       )
@@ -186,7 +187,7 @@ const ImageList = (props) => {
       imgMatrix[row] = <View style={styles.imgRowLayout} key={row}>{imgRow}</View>;
     }
 
-    setImages(<View>{imgMatrix}</View>);
+    setImages(<View style={styles.imgMatrixLayout}>{imgMatrix}</View>);
   }
 
   // see ClubsScreen.js for explanation
@@ -202,10 +203,28 @@ const ImageList = (props) => {
   );
 }
 
+const ImageCard = props => {
+  const source = props.source.uri;
+  const postedBy = props.postedBy;
+  const caption = props.caption;
+
+  return (
+    <Card style={styles.imgCard}>
+      <Card.Cover source={{ uri: source }}/>
+      <Card.Content style={styles.imgCardContent}>
+        <Text variant={'bodySmall'} style={styles.imgCardText}>Posted by: {postedBy}</Text>
+        <Text variant={'bodySmall'} style={styles.imgCardText}>{caption}</Text>
+      </Card.Content>
+    </Card>
+  );
+}
+
 // TODO: Implement backend
 async function getFilteredImages(club, filter) {
   /* RETURN FORMAT: [{
     src: str
+    postedBy: str
+    caption: str
   }...]
   */
   let clubSrc;
@@ -223,24 +242,26 @@ async function getFilteredImages(club, filter) {
       break;
   }
 
-  let ret;
+  let ret = {postedBy: 'n/a', caption: 'Caption!'};
   switch (filter) {
     case "Favorite":
-      ret = Array(2).fill({ src: clubSrc });
+      ret = Array(2).fill({ ...ret, src: clubSrc });
       break;
       
     case "School":
-      ret = Array(25).fill({ src: clubSrc });
+      ret = Array(25).fill({ ...ret, src: clubSrc });
       break;
 
     case "Club 1":
-      ret = Array(9).fill({ src: clubSrc });
+      ret = Array(9).fill({ ...ret, src: clubSrc });
       break;
 
     case "Club 2":
-      ret = Array(50).fill({ src: clubSrc });
+      ret = Array(50).fill({ ...ret, src: clubSrc });
       break;
   }
+
+  ret = ret.map(r => ({...r, postedBy: 'A'.repeat(Math.floor(Math.random() * 100))}));
 
   const promise = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -353,11 +374,13 @@ const styles = StyleSheet.create({
     marginRight: 15,
     marginBottom: 5,
   },
+  imgMatrixLayout: {
+    marginBottom: 150,
+  },
   imgRowLayout: { 
     flex: 1, 
     flexDirection: "row", 
     width: "100%",
-    height: 120,
   },
   menuContainer: {
     flex: 1,
@@ -370,10 +393,16 @@ const styles = StyleSheet.create({
   menuItem: {
     
   },
-  img: {
+  imgCard: {
     flex: 1,
     padding: 5,
     margin: 5,
+  },
+  imgCardContent: {
+    marginTop: 10,
+  },
+  imgCardText: {
+    marginTop: 5,
   },
   imgHolder: {
     flex: 1,
