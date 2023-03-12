@@ -12,14 +12,14 @@ export const GalleryScreen = (props) => {
 
   const setClubs = async () => {
     const results = await getClubs();
-    const clubs = results.map((step, move) => step.name);
+    // const clubs = results.map((step, move) => step.name);
     const resetToGalleryMainSubScreen = () => setDisplayScreen(<GalleryMainSubScreen 
       data={results}
       display={setDisplayScreen}
       goBack={resetToGalleryMainSubScreen}
     />);
 
-    console.log(clubs);
+    // console.log(clubs);
 
     setDisplayScreen(<GalleryMainSubScreen 
       data={results}
@@ -292,7 +292,7 @@ const MiniMenu = (props) => {
   const closeMenu = () => setVisible(false);
 
   async function getOptions() {
-    const clubNames = await getUserClubOptions();
+    const clubNames = await getAvailableFilters();
 
     const opts = clubNames.map((step, move) => {
       return (
@@ -339,7 +339,7 @@ const MiniMenuOption = (props) => {
 
 // TODO: Implement backend connection
 // may just use preset filters or remove altogether... ?
-async function getUserClubOptions() {
+async function getAvailableFilters() {
   /* RETURN FORMAT:
   [
   {
