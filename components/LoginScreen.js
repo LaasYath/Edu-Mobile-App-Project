@@ -55,7 +55,9 @@ export const LoginScreen = (props) => {
           <Button
             loading={isLoading}
             mode={'contained'}
-            onPress={() => {
+            onPress={async() => {
+              const userClass = new Parse.User();
+              const queryUser = new Parse.Query(userClass);
               async function Authenticate() {
                 if (schoolText == "" || passwordText == "" || IDText == "") {
                   alert("Please fill in all fields to login.");
@@ -72,11 +74,17 @@ export const LoginScreen = (props) => {
                       if (id == IDText) {
                         const passwordHash = object.get('passwordHash')
                         JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
-                          .then(hash => {if (passwordHash == hash) {
-                                          global.id = object.id;
-                                          global.school = schoolClassName;
-                                          setUser(true);
-                                          setIsLoading(false);
+                          .then(async(hash) => {if (passwordHash == hash) {
+                                          let user = await queryUser.get(object.get("objID"));
+                                          if (!user.get("emailVerified")) {
+                                            alert("Your account hash not been verified. Please recreate your account to resend the verification email");
+                                            setUser(false);
+                                          } else if (user.get('emailVerified')) {
+                                            global.id = object.id;
+                                            global.school = schoolClassName;
+                                            setUser(true);
+                                            setIsLoading(false);
+                                          }
                           }})
                           .catch(e => {
                             console.log(e);
@@ -136,8 +144,11 @@ const NewAccountModal = props => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [schoolText, setSchoolText] = useState("");
+  const [nameText, setNameText] = useState("");
   const [IDText, setIDText] = useState("");
+  const [emailText, setEmailText] = useState("");
   const [passwordText, setPasswordText] = useState("");
+  const [confirmPwdText, setConfirmPwdText] = useState("");
   const [errorText, setErrorText] = useState("");
 
   // TODO: Implement createNewAccount function
@@ -151,33 +162,65 @@ const NewAccountModal = props => {
     // START IMPLEMENTATION HERE
     await new Promise(res => setTimeout(res, 2000));
 
+    //TO-DO:  pointer to child, send user login credentials once email is verified
+    //BONUS: password reset option and wait to even add use to class until after email verified
+    (async () => {
+      //check if passwords match first
+      JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
+        .then(hash1 => {
+          JSHash(confirmPwdText, CONSTANTS.HashAlgorithms.sha256)
+            .then(hash2 => {
+              if (hash1==hash2) {
+                makeNewUser(hash1);
+              }
+            })
+            .catch(e => alert("Please make sure both password enteries match"));
+          }
+        )
+        .catch(e => console.log(e));
+
+      //user class used to utilize built in sign up function (has email verification and password reset)
+      const makeNewUser = async(hash) => {
+        const user = new Parse.User();
+        user.set('username', 'Scott Disick');
+        user.set('email', 'laasyath@gmail.com');
+        user.set('password', 'password');
+      
+        try {
+          let userResult = await user.signUp();
+          try {
+            //add new parent info to AustinHighSchool class
+            let schoolClassName = schoolText.replace(/\s/g, "");
+            const newParent = new Parse.Object(schoolClassName);
+            newParent.set('uID', Number(2+IDText.substring(1)));
+            newParent.set('name', nameText);
+            newParent.set('passwordHash', hash);
+            newParent.set('role', 'parent');
+            newParent.set("objID", user.id);
+            //TO-DO need to create a point object instead of a regular pointer
+            newParent.set('child1', new Parse.Object(schoolClassName));
+            const result = await newParent.save();
+
+            alert("Your account has been created! Please verify your account via email before logging in.");
+          } catch (error) {
+            console.log("Unable to save user information: " + error);
+            alert("It seems like we were unable to create this account. Please contact administration for further details or sumbit a Bug Error.");
+          }
+        } catch (error) {
+          alert("There is already an account registered under this email/username");
+        }
+      }
+    })();
+
     // error cases
     // if adding more, follow similar pattern as these
-    if (!schoolText) {
-      console.log('school error');
-      setErrorText('Please enter the school you go to.');
+    if (!schoolText || !nameText || !IDText || !passwordText || !confirmPwdText || !emailText) {
+      console.log('empty field error');
+      setErrorText('Please fill in all fields');
       resetButton();
       return;
     }
 
-    if (!IDText) {
-      console.log('id error');
-      setErrorText('Please enter your school-given ID.');
-      resetButton();
-      return;
-    }
-
-    if (!passwordText) {
-      console.log('password error');
-      setErrorText('Please enter a password.');
-      resetButton();
-      return;
-    }
-
-    console.log(`New account has been created:\n` +
-                `  School: "${schoolText}"\n` +
-                `  ID: "${IDText}"\n` +
-                `  Password: "${passwordText}"`);
     
     // Leave these as they are
     setErrorText('');
@@ -195,7 +238,7 @@ const NewAccountModal = props => {
   return (
     <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
       <Text style={styles.title}>
-        New Account
+        New Parent Account
       </Text>
       <TextInput style={styles.textInput}
         label="School"
@@ -203,15 +246,30 @@ const NewAccountModal = props => {
         onChangeText={text => setSchoolText(sanitize(text))}
       />
       <TextInput style={styles.textInput}
-        label="School-Given ID"
+        label="Name"
+        value={nameText}
+        onChangeText={text => setNameText(sanitize(text))}
+      />
+      <TextInput style={styles.textInput}
+        label="Child's ID"
         value={IDText}
         onChangeText={text => setIDText(sanitize(text))}
+      />
+      <TextInput style={styles.textInput}
+        label="Email"
+        value={emailText}
+        onChangeText={text => setEmailText(sanitize(text))}
       />
       <TextInput style={styles.textInput}
         label="Create Password"
         value={passwordText}
         onChangeText={text => setPasswordText(sanitize(text))}
         secureTextEntry={false}
+      />
+      <TextInput style={styles.textInput}
+        label="Confirm Password"
+        value={confirmPwdText}
+        onChangeText={text => setConfirmPwdText(sanitize(text))}
       />
       <View>
         <Text style={{ color: 'red' }}>
@@ -227,6 +285,13 @@ const NewAccountModal = props => {
     </Modal>
   );
 }
+
+// const getChildPointerObject = async() => {
+//   let searchUser = "AustinHighSchool";
+//   const query = new Parse.Query(searchUser);
+//   const objectStudent = await query.get(1111111);
+//   return objectStudent;
+// }
 
 const NewAccountButton = props => (
   <Button
@@ -275,7 +340,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   newAccountButtonContent: {
-    width: 200,
+    width: 250,
   },
   errorText: {
     backgroundColor: 'red',
