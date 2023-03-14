@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Image } from 'react-native';
 import { TextInput, Provider, Button, Modal, Portal } from 'react-native-paper';
 
 //hash funcs
@@ -31,6 +31,15 @@ export const LoginScreen = (props) => {
 
   return(
     <Provider>
+      <View style={styles.header}>
+        <Image
+          style={styles.tinyLogo}
+          source={require('../assets/eduMediaLogo.jpg')}
+        />
+        <Text style={styles.appName}>
+          EduMedia
+        </Text>
+      </View>
       <View style={styles.layout}>
         <Text style={styles.title}>
           Login
@@ -157,13 +166,20 @@ const NewAccountModal = props => {
       setIsLoading(false);
     }
 
-    console.log('check 1');
     setIsLoading(true);
     // START IMPLEMENTATION HERE
     await new Promise(res => setTimeout(res, 2000));
 
-    //TO-DO:  pointer to child, send user login credentials once email is verified
-    //BONUS: password reset option and wait to even add use to class until after email verified
+    // error cases
+    // if adding more, follow similar pattern as these
+    if (!schoolText || !nameText || !IDText || !passwordText || !confirmPwdText || !emailText) {
+      console.log('empty field error');
+      setErrorText('Please fill in all fields');
+      resetButton();
+      return;
+    }
+
+    //TO-DO:  pointer to existing child 
     (async () => {
       //check if passwords match first
       JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
@@ -211,16 +227,6 @@ const NewAccountModal = props => {
         }
       }
     })();
-
-    // error cases
-    // if adding more, follow similar pattern as these
-    if (!schoolText || !nameText || !IDText || !passwordText || !confirmPwdText || !emailText) {
-      console.log('empty field error');
-      setErrorText('Please fill in all fields');
-      resetButton();
-      return;
-    }
-
     
     // Leave these as they are
     setErrorText('');
@@ -318,8 +324,21 @@ function sanitize(string) {
 }
 
 const styles = StyleSheet.create({
+  tinyLogo: {
+    width: 135,
+    height: 125,
+    alignSelf: 'center'
+  },
+  appName: {
+    fontSize: 45,
+    marginTop: 10
+  },
+  header: {
+    marginTop: 125,
+    alignSelf: 'center',
+    marginBottom: 30
+  },
   layout: {
-    flex: 1,
     justifyContent: 'center',
   },
   modalStyle: {
@@ -334,10 +353,10 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
   newAccountButton: {
-    marginTop: 40,
+    marginTop: 20,
   },
   newAccountButtonContent: {
     width: 250,
