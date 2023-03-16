@@ -32,7 +32,7 @@ The `Gallery` screen lets users upload pictures to differnt clubs. Students can 
 <img src="galleryScreen.PNG" width="200" height="400"/> <img src="clubImages.PNG" width="200" height="400"/>
 
 ## Design
-- [Figma Wireframe](https://innerspacecavern.com/)
+- [Figma Wireframe](https://www.figma.com/file/ZPuje7fxNrZbalMliMEpLe/FBLA-Edu-Mobile-App-Design-(iPhone14%2C-Android%2C-iPhone-SE)?node-id=0%3A1&t=PEn7mOdSPMRwlqSs-1)
 
 ## Languages and Software Used
 - JavaScript
