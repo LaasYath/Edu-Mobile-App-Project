@@ -1,10 +1,12 @@
 import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, Divider } from 'react-native-paper';
 
 export const SettingsScreen = props => {
   return (
     <View>
-      <Text variant={'displayLarge'}>Settings</Text>
+      <Text>Hello</Text>
+      <Divider />
+      <Text></Text>
     </View>
   )
 }
