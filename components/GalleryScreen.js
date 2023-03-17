@@ -1,6 +1,19 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, Image } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
 import { Menu, Button, ActivityIndicator, Card, IconButton, Text, Divider, Appbar } from 'react-native-paper';
+
+import { Camera } from 'expo-camera';
+import { shareAsync } from 'expo-sharing';
+import * as MediaLibrary from 'expo-media-library';
+
+//Initialize Parse/Connect to Back4App db
+import Parse from "parse/react-native.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+//Initialize sdk
+Parse.setAsyncStorage(AsyncStorage);
+Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
+Parse.serverURL = 'https://parseapi.back4app.com/';
 
 export const GalleryScreen = (props) => {
   const loading = <ActivityIndicator 
@@ -92,43 +105,133 @@ const GalleryCard = props => {
   )
 }
 
-/**
- * TODO: Implement async getClubs()
- * 
- * return array of objects
- * [
- * {
- *  name: str,
- *  owned: boolean,
- * },..
- * ]
- */
 const getClubs = async () => {
-  let ret = [
-    {
-      name: 'FBLA',
-      owned: true,
-    },
-    {
-      name: 'Chess Club',
-      owned: false,
-    },
-  ];
+  let userQuery = new Parse.Query(global.school);
+  let userObj = await userQuery.get(global.id);
+  let clubs = userObj.get('clubs');
+  let ownedClubs = userObj.get('ownedClubs');
+  let ret = [];
+
+  for (const club of clubs) {
+    console.log(club);
+    let clubInfo
+    if (ownedClubs.includes(club)) {
+      clubInfo = {
+        name: club,
+        owned: true
+      }
+    } else {
+      clubInfo = {
+        name: club,
+        owned: false
+      }
+    }
+    ret.push(clubInfo);
+  }
 
   return await new Promise((res) => setTimeout(() => res(ret), 1000));
 }
 
-/**
- * TODO: Implement adding image to gallery
- */
+const AddImageScreen = props => {
+  let cameraRef = useRef();
+  const [hasCameraPermission, setHasCameraPermission] = useState();
+  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
+  const [photo, setPhoto] = useState();
+  const [captionText, setCaptionText] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const cameraPermission = await Camera.requestCameraPermissionsAsync();
+      const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
+      setHasCameraPermission(cameraPermission.status === "granted");
+      setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
+    })();
+  }, []);
+
+  if (hasCameraPermission === undefined) {
+    return <Text>Requesting permissions...</Text>
+  } else if (!hasCameraPermission) {
+    return <Text>Permission for camera not granted. Please change this in settings.</Text>
+  }
+
+  let takePic = async () => {
+    let options = {
+      quality: 1,
+      base64: true,
+      exif: false
+    };
+
+    let newPhoto = await cameraRef.current.takePictureAsync(options);
+    setPhoto(newPhoto);
+  };
+
+  if (photo) {
+    let sharePic = async(caption) => {
+      const userQuery = new Parse.Query(global.school);
+      const userObj = await userQuery.get(global.id);
+      const userNewPhoto = new Parse.Object(global.school + "Gallery");
+      userNewPhoto.set('album', '');
+      userNewPhoto.set('img_b64', photo.base64);
+      userNewPhoto.set('caption', caption);
+      userNewPhoto.set('uploader', userObj.get('name'));
+      userNewPhoto.set('club', '');
+      const result = await userNewPhoto.save();
+
+      alert("Your photo has been uploaded!");
+    };
+
+    let savePhoto = async() => {
+      MediaLibrary.saveToLibraryAsync(photo.uri).then(() => {
+      });
+    };
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <Image style={styles.preview} source={{ uri: "data:image/jpg;base64," + photo.base64 }} />
+        <Button title="Share" onPress={() => sharePic(captionText)}> Share Picture </Button>
+        <TextInput  
+          label="Caption"
+          value={captionText}
+          onChangeText={text => setCaptionText(text)}
+          style={styles.captionInput}>
+        </TextInput>
+        {hasMediaLibraryPermission ? <Button title="Save" onPress={() => savePhoto()}> Save Picture </Button> : undefined}
+        <Button title="Discard" onPress={() => setPhoto(undefined)}> 
+          Discard Picture
+        </Button>
+        {/* TODO:
+        * implement close camera 
+        */}
+        <Button title="Close Camera" onPress={console.log('implement close camera')}> 
+          Close Camera
+        </Button>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <Camera style={styles.container} ref={cameraRef}>
+      <View style={styles.buttonContainer}>
+        <Button onPress={takePic}>
+          <Ionicons name="camera" color="#b042ff" size={20}/>
+        </Button>
+      </View>
+      <StatusBar style="auto" />
+    </Camera>
+  );
+}
+
 const Gallery = props => {
   const [filter, setFilter] = useState("Favorite");
   const club = props.club;
   const goBack = props.goBack;
-  
-  const addImage = () => {
-    console.log(`image added to ${club}!`)
-  }
+
+  const loading = <ActivityIndicator 
+    animating={true} 
+    style={{ marginTop: 10, marginBottom: 10 }}
+  />;
+
+  const [displayScreen, setDisplayScreen] = useState(<View>{loading}</View>);
 
   const selectFilter = (selectedFilter) => {
     setFilter(selectedFilter);
@@ -139,7 +242,10 @@ const Gallery = props => {
       <Appbar.Header statusBarHeight={0}>
         <Appbar.BackAction onPress={goBack} />
         <Appbar.Content title={club} />
-        <Appbar.Action icon={'plus'} onPress={() => addImage()} />
+        {/* TODO
+        * open 'AddImageScreen' when user hits plus button
+        */}
+        <Appbar.Action icon={'plus'} onPress={(console.log("show AddImageScreen component so user can take pics and directly upload them"))} />
       </Appbar.Header>
       <ScrollView>
         <View style={styles.layout}>
@@ -159,6 +265,7 @@ const ImageList = (props) => {
 
   const club = props.club;
 
+  //TODO: keep images from overflowing past page, flex-column?
   async function getImages(filter) {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
     const data = await getFilteredImages(club, filter);
@@ -219,7 +326,6 @@ const ImageCard = props => {
   );
 }
 
-// TODO: Implement backend
 async function getFilteredImages(club, filter) {
   /* RETURN FORMAT: [{
     src: str
@@ -228,40 +334,19 @@ async function getFilteredImages(club, filter) {
   }...]
   */
   let clubSrc;
-  switch(club) {
-    case "FBLA":
-      clubSrc = 'https://picsum.photos/110/110';
-      break;
+  let ret = [];
 
-    case "Chess Club": 
-      clubSrc = 'https://picsum.photos/90/90';
-      break;
-
-    default:
-      clubSrc = 'https://picsum.photos/100/100';
-      break;
+  let clubQuery = new Parse.Query(global.school + "Gallery");
+  clubQuery.equalTo('club', club);
+  const results = await clubQuery.find();
+  for (const pic of results) {
+    let clubPic = {
+      src: pic.get('img_b64'),
+      postedBy: pic.get('uplaoder'),
+      caption: pic.get('caption')
+    }
+    ret.push(clubPic);
   }
-
-  let ret = {postedBy: 'n/a', caption: 'Caption!'};
-  switch (filter) {
-    case "Favorite":
-      ret = Array(2).fill({ ...ret, src: clubSrc });
-      break;
-      
-    case "School":
-      ret = Array(25).fill({ ...ret, src: clubSrc });
-      break;
-
-    case "Club 1":
-      ret = Array(9).fill({ ...ret, src: clubSrc });
-      break;
-
-    case "Club 2":
-      ret = Array(50).fill({ ...ret, src: clubSrc });
-      break;
-  }
-
-  ret = ret.map(r => ({...r, postedBy: 'A'.repeat(Math.floor(Math.random() * 100))}));
 
   const promise = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -337,8 +422,7 @@ const MiniMenuOption = (props) => {
   )
 }
 
-// TODO: Implement backend connection
-// may just use preset filters or remove altogether... ?
+// TODO: remove filters, not enough time
 async function getAvailableFilters() {
   /* RETURN FORMAT:
   [
@@ -406,5 +490,30 @@ const styles = StyleSheet.create({
   },
   imgHolder: {
     flex: 1,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContainer: {
+    backgroundColor: '#fff',
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginTop: "100%",
+    height: 50,
+    width: 50,
+    borderRadius: 50
+  },
+  exitCamera: {
+    flex: 'flex-end',
+    marginTop: "5%",
+  },
+  preview: {
+    alignSelf: 'stretch',
+    flex: 1
+  },
+  captionInput: {
+    width: "75%"
   }
 });
