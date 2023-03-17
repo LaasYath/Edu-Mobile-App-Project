@@ -4,10 +4,10 @@
     "slug": "EduMedia",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/eduMediaLogo.jpg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/eduSplashPage.jpg",
+      "image": "./assets/eduMediaSplashPage.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

@@ -86,7 +86,7 @@ export const LoginScreen = (props) => {
                           .then(async(hash) => {if (passwordHash == hash) {
                                           let user = await queryUser.get(object.get("objID"));
                                           if (!user.get("emailVerified")) {
-                                            alert("Your account hash not been verified. Please recreate your account to resend the verification email");
+                                            alert("Your account hash not been verified. Please verify your email before proceeding.");
                                             setUser(false);
                                           } else if (user.get('emailVerified')) {
                                             global.id = object.id;
