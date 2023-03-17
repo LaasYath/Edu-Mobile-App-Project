@@ -5,8 +5,6 @@ import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
 import Storage from 'react-native-storage';
 
-import { createStackNavigator } from '@react-navigation/stack';
-
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -67,6 +65,13 @@ export const CalendarScreen = (props) => {
     animating={true} 
     style={{ marginTop: 10, marginBottom: 10 }}
   />);
+  // tracks as the # of events changes
+  const [eventChange, setEventChange] = useState(0);
+  const [currentDate, setCurrentDate] = useState(moment().format("YYYY-MM-DD"));
+  
+  const onAddEvent = () => {
+    setEventChange(eventChange + 1);
+  }
 
   // const startDate = selectedDate ? selectedDate.toString() : '';
 
@@ -100,7 +105,7 @@ export const CalendarScreen = (props) => {
 
   useEffect(() => {
     getAllDates()
-  }, []);
+  }, [eventChange]);
 
   const displayDateCards = date => {
     const cards = allDates[date.format("YYYYMMDD")];
@@ -115,7 +120,10 @@ export const CalendarScreen = (props) => {
   return (
     <View style={styles.layout}>
       <CalendarPicker
-        onDateChange={(date) => displayDateCards(date)}
+        onDateChange={(date) => {
+          displayDateCards(date);
+          setCurrentDate(date.format("YYYY-MM-DD"));
+        }}
         todayBackgroundColor="#e3e3e3"
         selectedDayColor="#b3b3b3"
         customDatesStyles={customDates}
@@ -123,8 +131,7 @@ export const CalendarScreen = (props) => {
 
       <Divider style={styles.divider} />
 
-      {/* NEW - adds event*/}
-      <NewEventComponent />
+      <NewEventComponent onAddEvent={onAddEvent} currentDate={currentDate}/>
 
       <ScrollView>
         {dateCards}
@@ -227,8 +234,12 @@ const getDates = async () => {
   for (const event of resultsOfEvents) {
     if (global.clubsList.includes(event.get('entity')) || event.get('entity') == "School") {
       let schoolEvent = new Events(event.get('date'), event.get('entity'), event.get('title'), event.get('desc')); //date, src, title, desc
-      events.push(schoolEvent.getData());
-
+      
+      // if there is not already an event in arr events with the exact same fields, then add this event to events
+      if (!events.some(e => 
+        e.date === schoolEvent.date && e.src === schoolEvent.src && e.title === schoolEvent.title && e.desc === schoolEvent.desc
+      ))
+        events.push(schoolEvent.getData());
     }
   }
 
@@ -245,8 +256,7 @@ const getDates = async () => {
   });
 
   //load all of user's events
-  storage
-  .load({
+  const ret = await storage.load({
     key: 'personalEvents',
 
     autoSync: true,
@@ -259,14 +269,16 @@ const getDates = async () => {
     //   },
     //   someFlag: true
     // }
-  })
-  .then(ret => {
-    // found data go to then()
+  });
+
+  // await is the same as putting .then() after
+  let retEvents = [];
+  try {
     for (const object of ret.addedEvents) {
       console.log("LOAD" + object);
+      retEvents.push(object)
     }
-  })
-  .catch(err => {
+  } catch (err) {
     // any exception including data not found
     // goes to catch()
     console.warn(err.message);
@@ -276,9 +288,9 @@ const getDates = async () => {
       case 'ExpiredError':
         break;
     }
-  });
+  }
 
-  return new Promise((res) => {setTimeout(() => res(events), 3000)});
+  return retEvents;
 }
 
 const NewEventComponent = props => {
@@ -287,14 +299,22 @@ const NewEventComponent = props => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
+  const onAddEvent = props.onAddEvent;
+  const currentDate = props.currentDate;
+
+  const [dateTxt, setDateTxt] = useState(currentDate);
+
   return (
     <View>
       <Portal>
-        <NewEventModal visible={visible} onDismiss={hideModal} />
+        <NewEventModal visible={visible} onDismiss={hideModal} onAddEvent={onAddEvent} dateTxt={dateTxt} setDateTxt={setDateTxt}/>
       </Portal>
       <Button 
         mode={'text'} 
-        onPress={showModal} 
+        onPress={() => {
+          showModal();
+          setDateTxt(currentDate);
+        }} 
         style={[styles.addEventButton]} 
         contentStyle={styles.addEventText}
       >
@@ -309,23 +329,19 @@ const NewEventComponent = props => {
 const NewEventModal = props => {
   const visible = props.visible;
   const hideModal = props.onDismiss;
+  const onAddEvent = props.onAddEvent;
+  
+  const dateTxt = props.dateTxt;
+  const setDateTxt = props.setDateTxt;
 
   const [isLoading, setIsLoading] = useState(false);
-
-  //set date to current date
-  let date = new Date();
-  let month = date.getMonth()+1;
-  if (month < 10) {
-    month = "" + 0 + month;
-  }
-  let [dateTxt, setDateTxt] = useState(date.getFullYear() + "-" + month + "-" + date.getDate());
 
   const [titleTxt, setTitleTxt] = useState("");
   const [descTxt, setDescTxt] = useState("");
   const [srcTxt, setSrcTxt] = useState("");
   const [errorText, setErrorText] = useState("");
 
-  // TODO: Implement createNewAccount function
+  // TODO: Implement createNewEvent function
   const createNewEvent = async () => {
     const resetButton = () => {
       setIsLoading(false);
@@ -333,7 +349,7 @@ const NewEventModal = props => {
 
     setIsLoading(true);
 
-    await new Promise(res => setTimeout(res, 2000));
+    // await new Promise(res => setTimeout(res, 2000));
 
     //error cases
     if (!dateTxt || !titleTxt || !srcTxt || !descTxt) {
@@ -344,7 +360,7 @@ const NewEventModal = props => {
     }
     
     //add events by adding new event to local storage
-    (async () => {
+    await (async () => {
       let dateOfEvent = dateTxt.replace(/-/g, "");
       let newEvent = new Events(dateOfEvent, srcTxt, titleTxt, descTxt); //date, src, title, desc
       //automatically change local storage data
@@ -369,6 +385,7 @@ const NewEventModal = props => {
     setErrorText('');
     hideModal();
     resetButton();
+    onAddEvent();
     return;
   }
 
@@ -418,7 +435,6 @@ const NewEventModal = props => {
   );
 }
 
-
 const NewEventButton = props => (
 
   <Button
@@ -429,7 +445,6 @@ const NewEventButton = props => (
     Create New Event
   </Button>
 );
-
 
 //cleans data (automatically deltes special characters while the user is typing)
 function sanitize(string) {

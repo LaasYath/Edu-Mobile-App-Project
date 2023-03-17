@@ -1,4 +1,4 @@
-import { useState, useEffect, React } from 'react';
+import { useState, useEffect, useCallback, React } from 'react';
 import { StyleSheet, View, ScrollView, Share, Linking } from 'react-native';
 import { Card, Title, Paragraph, Divider, Button, Menu, ActivityIndicator, IconButton } from 'react-native-paper';
 
@@ -14,63 +14,57 @@ Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
 Parse.serverURL = 'https://parseapi.back4app.com/';
 
-export const ClubsScreen = () => (
-  <ScrollView style={styles.layout}>
-    <Title style={styles.title}>Your Clubs</Title>
-    <Divider bold={true} horizontalInset={true} />
-    <UserClubCards user={global.id} />
+export const ClubsScreen = () => {
+  const [filter, setFilter] = useState("A-Z");
+  // tracks changes in amount of clubs
+  const [clubChange, setClubChange] = useState(0);
 
-    <View style={styles.allClubsHeader}>
-      <View style={{ flex: 2 }}><Title style={styles.title}>Browse</Title></View>
-      <View style={{ flex: 1 }}><FilterMenu /></View>
-    </View>
-    <Divider bold={true} horizontalInset={true} />
-    <AllClubCards filter=""/>
-  </ScrollView>
-);
+  return (
+    <ScrollView style={styles.layout}>
+      <Title style={styles.title}>Your Clubs</Title>
+      <Divider bold={true} horizontalInset={true} />
+      <UserClubCards clubChange={clubChange} setClubChange={setClubChange}/>
 
-/*
-<UserClubCards user={
-      /* Once auth fully implemented, will need to have this actually reference their ID */
-      /*"Example User"
-    /*}/>
-*/
+      <View style={styles.allClubsHeader}>
+        <View style={{ flex: 2 }}><Title style={styles.title}>Browse</Title></View>
+        <View style={{ flex: 1 }}><FilterMenu filter={filter} setFilter={setFilter}/></View>
+      </View>
+      <Divider bold={true} horizontalInset={true} />
+      <AllClubCards filter={filter} clubChange={clubChange} setClubChange={setClubChange} />
+    </ScrollView>
+  );
+};
 
 const UserClubCards = (props) => {
-  const user = props.user;
-  const [cards, setCards] = useState(<ActivityIndicator 
-                                        animating={true} 
-                                        style={{ marginTop: 10, marginBottom: 10 }}
-  />);
-  //goes to allClubCards before executing get user club cards
+  const clubChange = props.clubChange;
+  const setClubChange = props.setClubChange;
 
-  // async func, retrives club dta from db and adds it to array
-  // no longer modifies cardData list decla
-  // now changes state
+  const [clubCards, setClubCards] = useState(<ActivityIndicator 
+    animating={true} 
+    style={{ marginTop: 10, marginBottom: 10 }}
+  />);
+
   async function getCardData() {
     const cardData = await getUserClubCards();
 
     const cards = cardData.map((step, move) => {
       return (
-        <ClubCardPersonal key={move} clubData={step} />
+        <ClubCardPersonal key={move} clubData={step} onLeave={() => {
+          setClubChange(clubChange - 1);
+        }}/>
       );
     });
 
-    setCards(<View>{cards}</View>);
+    setClubCards(<View>{cards}</View>);
   }
-
-  // react version of promises
-  // first argument is async function to execute (changing a state)
-  // second argument is array of variables to watch, then will
-  //   execute again if one of those variables is changed.
-  // warning: unwatched promises, idk how to fix
+  
   useEffect(() => {
     getCardData();
-  }, []);
+  }, [clubChange]);
 
   return (
     <View>
-      {cards}
+      {clubCards}
     </View>
   );
 }
@@ -129,14 +123,19 @@ async function getUserClubCards() {
   // at the end, includes all user's clubs/maps
 }
 
-const AllClubCards = (props) => {
+const AllClubCards = props => {
   // const cardsData = getAllClubCards();
   const [cards, setCards] = useState(<ActivityIndicator 
                                          animating={true} 
                                          style={{ marginTop: 10, marginBottom: 10 }}
   />);
-  let cardData = [];
- 
+  const clubChange = props.clubChange;
+  const setClubChange = props.setClubChange;
+
+  const onJoin = useCallback(() => {
+    setClubChange(clubChange + 1);
+  }, [clubChange]);
+  
   async function getAllClubCards() {
     /* implement getting all clubs */
     /* RETURN FORMAT: [{
@@ -146,6 +145,7 @@ const AllClubCards = (props) => {
     }...]
     (clubCover - can be URL or path (aka URI))
     */  
+    let cardData = [];
     let name = "", descrip = "", cover = "", x;
 
     let search = global.school + "Clubs";
@@ -155,9 +155,9 @@ const AllClubCards = (props) => {
     the filter button with new properties
     */
     console.log("filter is: " + props.filter);
-    if (props.filter == "A-Z") {
+    if (props.filter === "A-Z") {
       queryClubs.ascending("name");
-    } else if (props.filter == "Z-A") {
+    } else if (props.filter === "Z-A") {
       queryClubs.descending("name");
     }
 
@@ -184,7 +184,7 @@ const AllClubCards = (props) => {
     //return cardData;
     const cards = cardData.map((step, move) => {
       return (
-        <ClubCardBrowse key={move} clubData={step} />
+        <ClubCardBrowse key={move} clubData={step} onJoin={onJoin}/>
       );
     });
 
@@ -192,8 +192,8 @@ const AllClubCards = (props) => {
   }
 
   useEffect(() => {
-    getAllClubCards("");
-  }, []);
+    getAllClubCards();
+  }, [props.filter, clubChange]);
 
   return (
     <View>
@@ -204,12 +204,13 @@ const AllClubCards = (props) => {
 
 const ClubCardBrowse = (props) => {
   const clubInfo = props.clubData;
+  const onJoin = props.onJoin;
 
   return (
     <Card style={styles.card}>
       <Card.Title 
         title={clubInfo.clubTitle}
-        right={(props) => <ClubOptionsMenuBrowse {...props} clubData={clubInfo} />}
+        right={(props) => <ClubOptionsMenuBrowse {...props} clubData={clubInfo} onJoin={onJoin}/>}
       />
       <Card.Content>
         <Paragraph>{clubInfo.clubDescription}</Paragraph>
@@ -221,12 +222,13 @@ const ClubCardBrowse = (props) => {
 
 const ClubCardPersonal = (props) => {
   const clubInfo = props.clubData;
+  const onLeave = props.onLeave;
 
   return (
     <Card style={styles.card}>
       <Card.Title 
         title={clubInfo.clubTitle}
-        right={(props) => <ClubOptionsMenuPersonal {...props} clubData={clubInfo} />}
+        right={(props) => <ClubOptionsMenuPersonal {...props} clubData={clubInfo} onLeave={onLeave}/>}
       />
       <Card.Content>
         <Paragraph>{clubInfo.clubDescription}</Paragraph>
@@ -240,6 +242,7 @@ const ClubCardPersonal = (props) => {
 
 const ClubOptionsMenuBrowse = (props) => {
   const clubInfo = props.clubData;
+  const onJoin = props.onJoin;
   const [visible, setVisible] = useState(false);
 
   const openMenu = () => setVisible(true);
@@ -272,7 +275,6 @@ const ClubOptionsMenuBrowse = (props) => {
 
     closeMenu();
   }
-
 
   const linkToInsta = async() => {
     //saves picture to user's camera roll
@@ -324,6 +326,7 @@ const ClubOptionsMenuBrowse = (props) => {
     try {
       userObj.set('clubs', clubsList)
       console.log("club joined");
+      onJoin();
     } catch (error) {
       console.log("Error: unable to join club => ", error);
     }
@@ -349,6 +352,9 @@ const ClubOptionsMenuBrowse = (props) => {
 
 const ClubOptionsMenuPersonal = (props) => {
   const clubInfo = props.clubData;
+
+  // updates frontend
+  const onLeave = props.onLeave;
   const [visible, setVisible] = useState(false);
 
   const openMenu = () => setVisible(true);
@@ -381,7 +387,6 @@ const ClubOptionsMenuPersonal = (props) => {
 
     closeMenu();
   }
-
 
   const linkToInsta = async() => {
     //saves picture to user's camera roll
@@ -422,7 +427,7 @@ const ClubOptionsMenuPersonal = (props) => {
     closeMenu();
   }
 
-  const leaveClub = async() => {
+  const leaveClub = async () => {
     console.log(clubInfo.clubTitle);
     // console.log(clubInfo.clubID);
     // const toDel = await clubsQuery.get(clubInfo.clubID);
@@ -437,6 +442,7 @@ const ClubOptionsMenuPersonal = (props) => {
     try {
       userObj.set('clubs', clubsList)
       console.log("club removed");
+      onLeave();
     } catch (error) {
       console.log("Error: unable to del club => ", error);
     }
@@ -460,9 +466,10 @@ const ClubOptionsMenuPersonal = (props) => {
   )
 }
 
-const FilterMenu = () => {
+const FilterMenu = props => {
   const [visible, setVisible] = useState(false);
-  const [filter, setFilter] = useState("Filter...");
+  const filter = props.filter;
+  const setFilter = props.setFilter;
 
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
