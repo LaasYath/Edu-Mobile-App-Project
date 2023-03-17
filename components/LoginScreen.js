@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, KeyboardAvoidingView, } from 'react-native';
 import { TextInput, Provider, Button, Modal, Portal } from 'react-native-paper';
 
 //hash funcs
@@ -33,94 +33,98 @@ export const LoginScreen = (props) => {
 
   return(
     <Provider>
-      <View style={styles.header}>
-        <Image
-          style={styles.tinyLogo}
-          source={require('../assets/eduMediaLogo.jpg')}
-        />
-        <Text style={styles.appName}>
-          EduMedia
-        </Text>
-      </View>
-      <View style={styles.layout}>
-        {/* <Text style={styles.title}>
-          Login
-        </Text> */}
-        <TextInput style={styles.textInput}
-          label="School"
-          value={schoolText}
-          onChangeText={text => setSchoolText(sanitize(text))}
-        />
-        <TextInput style={styles.textInput}
-          label="ID"
-          value={IDText}
-          onChangeText={text => setIDText(sanitize(text))}
-        />
-        <TextInput style={styles.textInput}
-          label="Password"
-          value={passwordText}
-          onChangeText={text => setPasswordText(sanitize(text))}
-          secureTextEntry={true}
-        />
-        <View style={styles.button}>
-          <Button
-            loading={isLoading}
-            mode={'contained'}
-            onPress={async() => {
-              const userClass = new Parse.User();
-              const queryUser = new Parse.Query(userClass);
-              async function Authenticate() {
-                if (schoolText == "" || passwordText == "" || IDText == "") {
-                  alert("Please fill in all fields to login.");
-                } else {
-                  let schoolClassName = schoolText.replace(/\s/g, "");
-                  const User = Parse.Object.extend(schoolClassName);
-                  const query = new Parse.Query(User);
-                  const results = await query.find();
+      <KeyboardAvoidingView>
+        <ScrollView>
+          <View style={styles.header}>
+            <Image
+              style={styles.tinyLogo}
+              source={require('../assets/eduMediaLogo.jpg')}
+            />
+            <Text style={styles.appName}>
+              EduMedia
+            </Text>
+          </View>
+          <View style={styles.layout}>
+            {/* <Text style={styles.title}>
+              Login
+            </Text> */}
+            <TextInput style={styles.textInput}
+              label="School"
+              value={schoolText}
+              onChangeText={text => setSchoolText(sanitize(text))}
+            />
+            <TextInput style={styles.textInput}
+              label="ID"
+              value={IDText}
+              onChangeText={text => setIDText(sanitize(text))}
+            />
+            <TextInput style={styles.textInput}
+              label="Password"
+              value={passwordText}
+              onChangeText={text => setPasswordText(sanitize(text))}
+              secureTextEntry={true}
+            />
+            <View style={styles.button}>
+              <Button
+                loading={isLoading}
+                mode={'contained'}
+                onPress={async() => {
+                  const userClass = new Parse.User();
+                  const queryUser = new Parse.Query(userClass);
+                  async function Authenticate() {
+                    if (schoolText == "" || passwordText == "" || IDText == "") {
+                      alert("Please fill in all fields to login.");
+                    } else {
+                      let schoolClassName = schoolText.replace(/\s/g, "");
+                      const User = Parse.Object.extend(schoolClassName);
+                      const query = new Parse.Query(User);
+                      const results = await query.find();
 
-                  try {
-                    for (const object of results) {
-                      // Access the Parse Object attributes using the .GET method
-                      const id = object.get('uID');
-                      if (id == IDText) {
-                        const passwordHash = object.get('passwordHash')
-                        JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
-                          .then(async(hash) => {if (passwordHash == hash) {
-                                          let user = await queryUser.get(object.get("objID"));
-                                          if (!user.get("emailVerified")) {
-                                            alert("Your account hash not been verified. Please verify your email before proceeding");
-                                            setUser(false);
-                                          } else if (user.get('emailVerified')) {
-                                            global.id = object.id;
-                                            global.uID = object.get('uID');
-                                            global.school = schoolClassName;
-                                            setUser(true);
-                                            setIsLoading(false);
-                                          }
-                          }})
-                          .catch(e => {
-                            console.log(e);
-                            setIsLoading(false);
-                          });
+                      try {
+                        for (const object of results) {
+                          // Access the Parse Object attributes using the .GET method
+                          const id = object.get('uID');
+                          if (id == IDText) {
+                            const passwordHash = object.get('passwordHash')
+                            JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
+                              .then(async(hash) => {if (passwordHash == hash) {
+                                              let user = await queryUser.get(object.get("objID"));
+                                              if (!user.get("emailVerified")) {
+                                                alert("Your account hash not been verified. Please verify your email before proceeding");
+                                                setUser(false);
+                                              } else if (user.get('emailVerified')) {
+                                                global.id = object.id;
+                                                global.uID = object.get('uID');
+                                                global.school = schoolClassName;
+                                                setUser(true);
+                                                setIsLoading(false);
+                                              }
+                              }})
+                              .catch(e => {
+                                console.log(e);
+                                setIsLoading(false);
+                              });
+                          }
+                        }
+                      } catch (error) {
+                        setIsLoading(false);
+                        console.error('Error while fetching Student', error);
                       }
+
+                      setIsLoading(false);
                     }
-                  } catch (error) {
-                    setIsLoading(false);
-                    console.error('Error while fetching Student', error);
+
                   }
-
                   setIsLoading(false);
-                }
-
-              }
-              setIsLoading(false);
-              Authenticate();
-              
-            }}
-          > LOGIN </Button>
-        </View>
-        <NewAccountComponent />
-      </View>
+                  Authenticate();
+                  
+                }}
+              > LOGIN </Button>
+            </View>
+            <NewAccountComponent />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Provider>
   );
 }
