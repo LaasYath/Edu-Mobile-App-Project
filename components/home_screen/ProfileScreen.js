@@ -3,6 +3,15 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Card, Text } from 'react-native-paper';
 
+//Initialize Parse/Connect to Back4App db
+import Parse from "parse/react-native.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+//Initialize sdk
+Parse.setAsyncStorage(AsyncStorage);
+Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
+Parse.serverURL = 'https://parseapi.back4app.com/';
+
 export const ProfileScreen = props => {
   const [infoComponent, setInfoComponent] = useState(<ActivityIndicator 
     animating={true} 
@@ -21,7 +30,7 @@ export const ProfileScreen = props => {
 
   return (
     <View>
-      <Text variant={'displayLarge'}>Profile</Text>
+      {/* <Text variant={'displayLarge'}>Profile</Text> */}
       {infoComponent}
     </View>
   )
@@ -33,13 +42,13 @@ const ProfileDisplay = props => {
   const id = data.id;
   const role = data.role;
   const school = data.school;
-  const relatedPeople = data.relatedPeople;
+  // const relatedPeople = data.relatedPeople;
 
-  const relatedPeopleArr = relatedPeople.map((step, move) => {
-    return (
-      <Text key={move}>{step.name}: {step.relationship}</Text>
-    );
-  });
+  // const relatedPeopleArr = relatedPeople.map((step, move) => {
+  //   return (
+  //     <Text key={move}>{step.name}: {step.relationship}</Text>
+  //   );
+  // });
 
   return (
     <View>
@@ -47,50 +56,28 @@ const ProfileDisplay = props => {
       <Text>Id: {id}</Text>
       <Text>Role: {role}</Text>
       <Text>School: {school}</Text>
-      <View>
+      {/* <View>
         {relatedPeopleArr}
-      </View>
+      </View> */}
     </View>
   );
 }
 
-/**
- * TODO: Implement async getProfileData()
- * 
- * ret:
- * {
- *  name: str,
- *  id: str,
- *  role: str,
- *  school: str,
- *  relatedPeople: 
- *    {
- *      name: str,
- *      relationship: str,
- *    }
- * }
- */
+/* TO-DO: include parent information in profile */
 const getProfileData = async () => {
-  let ret ={
-    name: "Acer Dan",
-    id: "1123456",
-    role: "Student",
-    school: "Austin High School",
-    relatedPeople: [
-      {
-        name: "Amy Dan",
-        relationship: "Guardian",
-      },
-      {
-        name: "Daniel Dan",
-        relationship: "Guardian",
-      },
-    ],
+  let ret
+  const userQuery = new Parse.Query(global.school);
+  const userObj = await userQuery.get(global.id);
+  ret = {
+    name: userObj.get('name'),
+    id: userObj.get('uID'),
+    role: userObj.get('role'),
+    school: global.school,
   }
 
   return await new Promise((res) => setTimeout(() => res(ret), 1000));
 }
 
 const styles = StyleSheet.create({
-
+  
 });

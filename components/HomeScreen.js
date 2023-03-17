@@ -4,10 +4,20 @@ import { ActivityIndicator, Card, Divider, IconButton, Text, TouchableRipple } f
 
 import { createStackNavigator } from '@react-navigation/stack';
 
+//Initialize Parse/Connect to Back4App db
+import Parse from "parse/react-native.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+//Initialize sdk
+Parse.setAsyncStorage(AsyncStorage);
+Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
+Parse.serverURL = 'https://parseapi.back4app.com/';
+
 import { AuthContext } from '../Contexts.js';
 import { AboutScreen } from './home_screen/AboutScreen.js'
 import { ProfileScreen } from './home_screen/ProfileScreen.js'
 import { SettingsScreen } from './home_screen/SettingsScreen.js'
+import { ReportBugScreen } from './home_screen/ReportBugScreen.js'
 
 // react navigation has lot more capability than 
 // previously thought, could go back
@@ -29,6 +39,10 @@ export const HomeScreen = (props) => {
       <Stack.Screen 
         name="Profile" 
         component={ProfileScreen} 
+      />
+      <Stack.Screen 
+        name="Report Bug" 
+        component={ReportBugScreen} 
       />
       <Stack.Screen 
         name="Settings" 
@@ -55,12 +69,15 @@ const HomeMainSubScreen = props => {
 
   const getClassCards = async () => {
     const data = await getClasses();
+    let count = 0;
     const cardResults = data.map((step, move) => {
+      count += 1;
       return (
         <ClassCard 
           className={step.className}
           teacher={step.teacher}
           key={move}
+          period={count}
         />
       );
     });
@@ -87,6 +104,7 @@ const Options = props => {
   const navigation = props.navigation;
 
   // console.log(`Checking within options: ${navigation === null}`)
+  //keep chat or change to report absence??
   return (
     <View style={styles.layout}>
       <View style={[{ marginTop: 20 }, styles.optionsRow]}>
@@ -96,11 +114,11 @@ const Options = props => {
           caption={'Profile'}
         />
         <Option 
-          icon={'calendar'}
-          onPress={() => navigation.navigate('Calendar')}
-          caption={'Calendar'}
-        />
-        <Option 
+          icon={'bug'}
+          onPress={() => navigation.navigate('Report Bug')}
+          caption={'Report Bug'}
+        /> 
+        <Option
           icon={'message'}
           onPress={() => navigation.navigate('Chat')}
           caption={'Chat'}
@@ -151,10 +169,11 @@ const Option = props => {
 const ClassCard = props => {
   const className = props.className;
   const teacher = props.teacher;
+  const period = props.period
 
   return (
     <Card style={styles.classCard}>
-      <Card.Title title={className}/>
+      <Card.Title title={period + ". " + className}/>
       <Card.Content>
         <Text variant={'bodyMedium'}>  Teacher: {teacher}</Text>
       </Card.Content>
@@ -176,26 +195,42 @@ const ClassCard = props => {
  * note: be sure this is in the correct order
  */
 const getClasses = async () => {
+  const userQuery = new Parse.Query(global.school);
+  const userObj = await userQuery.get(global.id);
+  const classes = userObj.get('classes');
+  const teachers = userObj.get('teachers');
   let ret = [
     {
-      className: "English",
-      teacher: "Ms. A"
+      className: classes[0],
+      teacher: teachers[0],
     },
     {
-      className: "Science",
-      teacher: "Mr. B",
+      className: classes[1],
+      teacher: teachers[1],
     },
     {
-      className: "Math",
-      teacher: "Mr. C",
+      className: classes[2],
+      teacher: teachers[2],
     },
     {
-      className: "Computer Science",
-      teacher: "Mrs. D",
+      className: classes[3],
+      teacher: teachers[3],
     },
     {
-      className: "History",
-      teacher: "Mr. E",
+      className: classes[4],
+      teacher: teachers[4],
+    },
+    {
+      className: classes[5],
+      teacher: teachers[5],
+    },
+    {
+      className: classes[6],
+      teacher: teachers[6],
+    },
+    {
+      className: classes[7],
+      teacher: teachers[7],
     },
   ];
 
