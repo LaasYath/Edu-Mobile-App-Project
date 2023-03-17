@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet, Text, View, Image, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
 import { TextInput, Provider, Button, Modal, Portal } from 'react-native-paper';
 
 //hash funcs
@@ -19,7 +19,9 @@ Parse.serverURL = 'https://parseapi.back4app.com/';
 
 (async () => {
   global.id = "";
+  global.uID = "";
   global.school = "";
+  global.clubsList = [];
 })
 
 export const LoginScreen = (props) => {
@@ -41,9 +43,9 @@ export const LoginScreen = (props) => {
         </Text>
       </View>
       <View style={styles.layout}>
-        <Text style={styles.title}>
+        {/* <Text style={styles.title}>
           Login
-        </Text>
+        </Text> */}
         <TextInput style={styles.textInput}
           label="School"
           value={schoolText}
@@ -86,10 +88,11 @@ export const LoginScreen = (props) => {
                           .then(async(hash) => {if (passwordHash == hash) {
                                           let user = await queryUser.get(object.get("objID"));
                                           if (!user.get("emailVerified")) {
-                                            alert("Your account hash not been verified. Please verify your email before proceeding.");
+                                            alert("Your account hash not been verified. Please verify your email before proceeding");
                                             setUser(false);
                                           } else if (user.get('emailVerified')) {
                                             global.id = object.id;
+                                            global.uID = object.get('uID');
                                             global.school = schoolClassName;
                                             setUser(true);
                                             setIsLoading(false);
@@ -114,7 +117,7 @@ export const LoginScreen = (props) => {
               Authenticate();
               
             }}
-          >GO!</Button>
+          > LOGIN </Button>
         </View>
         <NewAccountComponent />
       </View>
@@ -270,12 +273,13 @@ const NewAccountModal = props => {
         label="Create Password"
         value={passwordText}
         onChangeText={text => setPasswordText(sanitize(text))}
-        secureTextEntry={false}
+        secureTextEntry={true}
       />
       <TextInput style={styles.textInput}
         label="Confirm Password"
         value={confirmPwdText}
         onChangeText={text => setConfirmPwdText(sanitize(text))}
+        secureTextEntry={true}
       />
       <View>
         <Text style={{ color: 'red' }}>
@@ -330,13 +334,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   appName: {
-    fontSize: 45,
+    fontSize: 35,
     marginTop: 10
   },
   header: {
-    marginTop: 125,
+    marginTop: "20%",
     alignSelf: 'center',
-    marginBottom: 30
+    marginBottom: "10%"
   },
   layout: {
     justifyContent: 'center',
@@ -348,15 +352,15 @@ const styles = StyleSheet.create({
   },
   title: {
     alignSelf: 'center',
-    fontSize: 32,
+    fontSize: 25,
     marginBottom: 16,
   },
   button: {
     alignSelf: 'center',
-    marginTop: 20,
+    marginTop: "7.5%",
   },
   newAccountButton: {
-    marginTop: 20,
+    marginTop: "5%",
   },
   newAccountButtonContent: {
     width: 250,
