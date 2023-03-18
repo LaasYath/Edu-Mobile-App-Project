@@ -363,7 +363,7 @@ async function getFilteredImages(club) {
   for (const pic of results) {
     let clubPic = {
       src: pic.get('img_b64'),
-      postedBy: pic.get('uplaoder'),
+      postedBy: pic.get('uploader'),
       caption: pic.get('caption')
     }
     ret.push(clubPic);
