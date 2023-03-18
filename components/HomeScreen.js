@@ -18,6 +18,7 @@ import { AboutScreen } from './home_screen/AboutScreen.js'
 import { ProfileScreen } from './home_screen/ProfileScreen.js'
 import { SettingsScreen } from './home_screen/SettingsScreen.js'
 import { ReportBugScreen } from './home_screen/ReportBugScreen.js'
+import { ReportAbsenceScreen } from './home_screen/ReportAbsenceScreen.js';
 
 // react navigation has lot more capability than 
 // previously thought, could go back
@@ -33,7 +34,6 @@ export const HomeScreen = (props) => {
       <Stack.Screen 
         name="SubHome" 
         component={HomeMainSubScreen} 
-        initialParams={{ mainNavigation: navigation }}
         options={{ headerShown: false }}
       />
       <Stack.Screen 
@@ -51,6 +51,10 @@ export const HomeScreen = (props) => {
       <Stack.Screen 
         name="About" 
         component={AboutScreen} 
+      />
+      <Stack.Screen 
+        name="Report Absence" 
+        component={ReportAbsenceScreen} 
       />
     </Stack.Navigator>
   );
@@ -114,21 +118,21 @@ const Options = props => {
           caption={'Profile'}
         />
         <Option 
-          icon={'bug'}
-          onPress={() => navigation.navigate('Report Bug')}
-          caption={'Report Bug'}
-        /> 
-        <Option
-          icon={'message'}
-          onPress={() => navigation.navigate('Chat')}
-          caption={'Chat'}
+          icon={'earth'}
+          onPress={() => navigation.navigate('About')}
+          caption={'About'}
         />
-      </View>
-      <View style={styles.optionsRow}>
         <Option 
           icon={'cog'}
           onPress={() => navigation.navigate('Settings')}
           caption={'Settings'}
+        />
+      </View>
+      <View style={styles.optionsRow}>
+        <Option
+          icon={'calendar-remove'}
+          onPress={() => navigation.navigate('Report Absence')}
+          caption={'Report Absence'}
         />
         <Option 
           icon={'cellphone'}
@@ -136,10 +140,10 @@ const Options = props => {
           caption={'Logout'}
         />
         <Option 
-          icon={'earth'}
-          onPress={() => navigation.navigate('About')}
-          caption={'About'}
-        />
+          icon={'bug'}
+          onPress={() => navigation.navigate('Report Bug')}
+          caption={'Report Bug'}
+        /> 
       </View>
     </View>
   );
@@ -247,6 +251,8 @@ const styles = StyleSheet.create({
   },
   option: {
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
     width: 100,
     height: 100,
   },

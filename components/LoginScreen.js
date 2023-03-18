@@ -283,11 +283,11 @@ const NewAccountModal = props => {
         secureTextEntry={true}
       />
       <View>
-        <Text style={{ color: 'red' }}>
+        <Text style={[styles.errorText, (errorText) ? { paddingBottom: 10 } : null]}>
           {errorText}
         </Text>
       </View>
-      <View style={styles.button}>
+      <View style={[styles.button, {marginTop: 0}]}>
         <NewAccountButton 
           onPress={() => { createNewAccount(); }} 
           loading={isLoading}
@@ -370,7 +370,6 @@ const styles = StyleSheet.create({
     width: 250,
   },
   errorText: {
-    backgroundColor: 'red',
-    padding: 10,
+    color: 'red',
   }
 });
