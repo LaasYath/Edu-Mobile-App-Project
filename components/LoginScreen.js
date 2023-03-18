@@ -88,26 +88,34 @@ export const LoginScreen = (props) => {
                       for (const object of results) {
                         // Access the Parse Object attributes using the .GET method
                         const id = object.get('uID');
-                        if (id == IDText) {
+                        // console.log(id);
+                        // console.log(String(id) === IDText);
+                        if (String(id) === IDText) {
                           const passwordHash = object.get('passwordHash')
                           JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
-                            .then(async(hash) => {if (passwordHash == hash) {
-                                            let user = await queryUser.get(object.get("objID"));
-                                            if (!user.get("emailVerified")) {
-                                              alert("Your account hash not been verified. Please verify your email before proceeding");
-                                              setUser(false);
+                            .then(async(hash) => {
+                              if (passwordHash === hash) {
+                                let user = await queryUser.get(object.get("objID"));
+                                
+                                if (!user.get("emailVerified")) {
+                                  alert("Your account hash not been verified. Please verify your email before proceeding");
+                                  console.log("Your account hash not been verified. Please verify your email before proceeding")
+                                  setUser(false);
 
-                                            } else if (user.get('emailVerified')) {
-                                              global.id = object.id;
-                                              global.uID = object.get('uID');
-                                              global.school = schoolClassName;
-                                              setUser(true);
-                                            }
-                            }})
-                            .catch(e => {
+                                } else if (user.get('emailVerified')) {
+                                  global.id = object.id;
+                                  global.uID = object.get('uID');
+                                  global.school = schoolClassName;
+                                  setUser(true);
+                                }
+                              } else {
+                                alert("Incorrect password.");
+                              }
+                            }).catch(e => {
                               console.log(e);
+                              alert("Something went wrong. If the problem persists, contact an administrator.")
                             });
-                        }
+                        } 
                       }
                     } catch (error) {
                       console.error('Error while fetching Student', error);

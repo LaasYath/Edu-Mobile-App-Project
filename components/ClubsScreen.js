@@ -321,6 +321,13 @@ const ClubOptionsMenuBrowse = (props) => {
     const userQuery = new Parse.Query(global.school);
     const userObj = await userQuery.get(global.id);
     let clubsList = userObj.get('clubs');
+
+    console.log(clubsList);
+    if (clubsList.some(c => c === clubInfo.clubTitle)) {
+      alert("You are already in that club.");
+      return;
+    }
+
     clubsList.push(clubInfo.clubTitle);
     
     try {
