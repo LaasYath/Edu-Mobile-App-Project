@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Card, ActivityIndicator, Text, Divider, Button, Modal, Portal, TextInput } from 'react-native-paper';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
@@ -421,7 +421,7 @@ const NewEventModal = props => {
         onChangeText={text => setDescTxt(sanitize(text))}
       />
       <View>
-        <Text style={{ color: 'red' }}>
+        <Text style={[styles.errorText, (errorText) ? { marginBottom: 10 } : null]}>
           {errorText}
         </Text>
       </View>
@@ -491,11 +491,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   errorText: {
-    backgroundColor: 'red',
-    padding: 10,
+    color: 'red',
   },
   button: {
     alignSelf: 'center',
-    marginTop: 10,
   },
 });
