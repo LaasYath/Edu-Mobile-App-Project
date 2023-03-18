@@ -91,13 +91,13 @@ const GalleryMainSubScreen = props => {
   
   return (
     <ScrollView>
-      <Text variant={'titleLarge'} style={styles.categoryTitle}>My Clubs</Text>
+      <Text variant={'titleLarge'} style={styles.categoryTitle}>Owned Clubs</Text>
       <Divider style={styles.divider} bold={true}/>
       <View>
         {ownedCards}
       </View>
 
-      <Text variant={'titleLarge'} style={styles.categoryTitle}>Browse</Text>
+      <Text variant={'titleLarge'} style={[styles.categoryTitle, {paddingTop: 20}]}>Clubs You're In</Text>
       <Divider style={styles.divider} bold={true}/>
       <View>
         {allCards}

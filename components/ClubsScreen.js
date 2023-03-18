@@ -517,6 +517,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     marginBottom: 3,
+    marginTop: 50,
   },
   title: {
     marginLeft: 10,
