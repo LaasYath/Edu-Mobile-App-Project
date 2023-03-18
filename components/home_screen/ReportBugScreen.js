@@ -9,6 +9,7 @@ export const ReportBugScreen = props => {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // TODO: Implement async onSubmit()
   const onSubmit = async () => {
     if (!locationText || !descText) {
       setErrorText("Please in all fields.")
@@ -52,7 +53,7 @@ export const ReportBugScreen = props => {
           onPress={async () => {
             setIsLoading(true);
             await onSubmit();
-            
+
             setIsLoading(false);
           }}
         >
