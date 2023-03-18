@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, KeyboardAvoidingView} from 'react-native';
 import { Card, ActivityIndicator, Text, Divider, Button, Modal, Portal, TextInput } from 'react-native-paper';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
@@ -397,40 +397,44 @@ const NewEventModal = props => {
 
   return (
     <Modal avoidKeyboard visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
-      <Text style={styles.title}>
-        New Event
-      </Text>
-      <TextInput style={styles.textInput}
-        label="Title"
-        value={titleTxt}
-        onChangeText={text => setTitleTxt(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Group"
-        value={srcTxt}
-        onChangeText={text => setSrcTxt(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Date (YYYY-MM-DD)"
-        value={dateTxt}
-        onChangeText={text => setDateTxt(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Description"
-        value={descTxt}
-        onChangeText={text => setDescTxt(sanitize(text))}
-      />
-      <View>
-        <Text style={[styles.errorText, (errorText) ? { marginBottom: 10 } : null]}>
-          {errorText}
+      <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null}>
+        <ScrollView>
+        <Text style={styles.title}>
+          New Event
         </Text>
-      </View>
-      <View style={styles.button}>
-        <NewEventButton 
-          onPress={() => { createNewEvent(); }} 
-          loading={isLoading}
+        <TextInput style={styles.textInput}
+          label="Title"
+          value={titleTxt}
+          onChangeText={text => setTitleTxt(sanitize(text))}
         />
-      </View>
+        <TextInput style={styles.textInput}
+          label="Group"
+          value={srcTxt}
+          onChangeText={text => setSrcTxt(sanitize(text))}
+        />
+        <TextInput style={styles.textInput}
+          label="Date (YYYY-MM-DD)"
+          value={dateTxt}
+          onChangeText={text => setDateTxt(sanitize(text))}
+        />
+        <TextInput style={styles.textInput}
+          label="Description"
+          value={descTxt}
+          onChangeText={text => setDescTxt(sanitize(text))}
+        />
+        <View>
+          <Text style={[styles.errorText, (errorText) ? { marginBottom: 10 } : null]}>
+            {errorText}
+          </Text>
+        </View>
+        <View style={styles.button}>
+          <NewEventButton 
+            onPress={() => { createNewEvent(); }} 
+            loading={isLoading}
+          />
+        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

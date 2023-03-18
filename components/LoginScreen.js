@@ -247,52 +247,56 @@ const NewAccountModal = props => {
 
   return (
     <Modal avoidKeyboard visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
-      <Text style={styles.title}>
-        New Parent Account
-      </Text>
-      <TextInput style={styles.textInput}
-        label="School"
-        value={schoolText}
-        onChangeText={text => setSchoolText(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Name"
-        value={nameText}
-        onChangeText={text => setNameText(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Child's ID"
-        value={IDText}
-        onChangeText={text => setIDText(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Email"
-        value={emailText}
-        onChangeText={text => setEmailText(sanitize(text))}
-      />
-      <TextInput style={styles.textInput}
-        label="Create Password"
-        value={passwordText}
-        onChangeText={text => setPasswordText(sanitize(text))}
-        secureTextEntry={true}
-      />
-      <TextInput style={styles.textInput}
-        label="Confirm Password"
-        value={confirmPwdText}
-        onChangeText={text => setConfirmPwdText(sanitize(text))}
-        secureTextEntry={true}
-      />
-      <View>
-        <Text style={[styles.errorText, (errorText) ? { paddingBottom: 10 } : null]}>
-          {errorText}
-        </Text>
-      </View>
-      <View style={[styles.button, {marginTop: 0}]}>
-        <NewAccountButton 
-          onPress={() => { createNewAccount(); }} 
-          loading={isLoading}
-        />
-      </View>
+      <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null}>
+        <ScrollView>
+          <Text style={styles.title}>
+            New Parent Account
+          </Text>
+          <TextInput style={styles.textInput}
+            label="School"
+            value={schoolText}
+            onChangeText={text => setSchoolText(sanitize(text))}
+          />
+          <TextInput style={styles.textInput}
+            label="Name"
+            value={nameText}
+            onChangeText={text => setNameText(sanitize(text))}
+          />
+          <TextInput style={styles.textInput}
+            label="Child's ID"
+            value={IDText}
+            onChangeText={text => setIDText(sanitize(text))}
+          />
+          <TextInput style={styles.textInput}
+            label="Email"
+            value={emailText}
+            onChangeText={text => setEmailText(sanitize(text))}
+          />
+          <TextInput style={styles.textInput}
+            label="Create Password"
+            value={passwordText}
+            onChangeText={text => setPasswordText(sanitize(text))}
+            secureTextEntry={true}
+          />
+          <TextInput style={styles.textInput}
+            label="Confirm Password"
+            value={confirmPwdText}
+            onChangeText={text => setConfirmPwdText(sanitize(text))}
+            secureTextEntry={true}
+          />
+          <View>
+            <Text style={[styles.errorText, (errorText) ? { paddingBottom: 10 } : null]}>
+              {errorText}
+            </Text>
+          </View>
+          <View style={[styles.button, {marginTop: 0}]}>
+            <NewAccountButton 
+              onPress={() => { createNewAccount(); }} 
+              loading={isLoading}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
