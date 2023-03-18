@@ -69,55 +69,53 @@ export const LoginScreen = (props) => {
                 loading={isLoading}
                 mode={'contained'}
                 onPress={async() => {
+                  setIsLoading(true);
+                  
                   const userClass = new Parse.User();
                   const queryUser = new Parse.Query(userClass);
                   async function Authenticate() {
                     if (schoolText == "" || passwordText == "" || IDText == "") {
                       alert("Please fill in all fields to login.");
-                    } else {
-                      let schoolClassName = schoolText.replace(/\s/g, "");
-                      const User = Parse.Object.extend(schoolClassName);
-                      const query = new Parse.Query(User);
-                      const results = await query.find();
+                      return;
+                    } 
 
-                      try {
-                        for (const object of results) {
-                          // Access the Parse Object attributes using the .GET method
-                          const id = object.get('uID');
-                          if (id == IDText) {
-                            const passwordHash = object.get('passwordHash')
-                            JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
-                              .then(async(hash) => {if (passwordHash == hash) {
-                                              let user = await queryUser.get(object.get("objID"));
-                                              if (!user.get("emailVerified")) {
-                                                alert("Your account hash not been verified. Please verify your email before proceeding");
-                                                setUser(false);
-                                              } else if (user.get('emailVerified')) {
-                                                global.id = object.id;
-                                                global.uID = object.get('uID');
-                                                global.school = schoolClassName;
-                                                setUser(true);
-                                                setIsLoading(false);
-                                              }
-                              }})
-                              .catch(e => {
-                                console.log(e);
-                                setIsLoading(false);
-                              });
-                          }
+                    let schoolClassName = schoolText.replace(/\s/g, "");
+                    const User = Parse.Object.extend(schoolClassName);
+                    const query = new Parse.Query(User);
+                    const results = await query.find();
+
+                    try {
+                      for (const object of results) {
+                        // Access the Parse Object attributes using the .GET method
+                        const id = object.get('uID');
+                        if (id == IDText) {
+                          const passwordHash = object.get('passwordHash')
+                          JSHash(passwordText, CONSTANTS.HashAlgorithms.sha256)
+                            .then(async(hash) => {if (passwordHash == hash) {
+                                            let user = await queryUser.get(object.get("objID"));
+                                            if (!user.get("emailVerified")) {
+                                              alert("Your account hash not been verified. Please verify your email before proceeding");
+                                              setUser(false);
+
+                                            } else if (user.get('emailVerified')) {
+                                              global.id = object.id;
+                                              global.uID = object.get('uID');
+                                              global.school = schoolClassName;
+                                              setUser(true);
+                                            }
+                            }})
+                            .catch(e => {
+                              console.log(e);
+                            });
                         }
-                      } catch (error) {
-                        setIsLoading(false);
-                        console.error('Error while fetching Student', error);
                       }
-
-                      setIsLoading(false);
+                    } catch (error) {
+                      console.error('Error while fetching Student', error);
                     }
-
                   }
+
+                  await Authenticate();
                   setIsLoading(false);
-                  Authenticate();
-                  
                 }}
               > LOGIN </Button>
             </View>
@@ -167,7 +165,6 @@ const NewAccountModal = props => {
   const [confirmPwdText, setConfirmPwdText] = useState("");
   const [errorText, setErrorText] = useState("");
 
-  // TODO: Implement createNewAccount function
   const createNewAccount = async () => {
     const resetButton = () => {
       setIsLoading(false);
