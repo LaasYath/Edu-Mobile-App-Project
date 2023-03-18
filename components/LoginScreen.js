@@ -33,8 +33,8 @@ export const LoginScreen = (props) => {
 
   return(
     <Provider>
-      <KeyboardAvoidingView>
-        <ScrollView>
+      <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null}>
+        <ScrollView style={styles.subLayout}>
           <View style={styles.header}>
             <Image
               style={styles.tinyLogo}
@@ -44,7 +44,7 @@ export const LoginScreen = (props) => {
               EduMedia
             </Text>
           </View>
-          <View style={styles.layout}>
+          <View>
             {/* <Text style={styles.title}>
               Login
             </Text> */}
@@ -249,7 +249,7 @@ const NewAccountModal = props => {
   }, [visible])
 
   return (
-    <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
+    <Modal avoidKeyboard visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
       <Text style={styles.title}>
         New Parent Account
       </Text>
@@ -348,6 +348,9 @@ const styles = StyleSheet.create({
   },
   layout: {
     justifyContent: 'center',
+  },
+  subLayout: {
+    paddingBottom: 100,
   },
   modalStyle: {
     backgroundColor: 'white',

@@ -396,7 +396,7 @@ const NewEventModal = props => {
   }, [visible])
 
   return (
-    <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
+    <Modal avoidKeyboard visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
       <Text style={styles.title}>
         New Event
       </Text>
