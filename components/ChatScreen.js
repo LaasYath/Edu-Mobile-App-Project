@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
-import { ActivityIndicator, Appbar, Card, Divider, Text, TextInput, TouchableRipple } from 'react-native-paper';
 import { GiftedChat } from 'react-native-gifted-chat';
 import { useParseQuery } from '@parse/react-native';
 
@@ -16,6 +14,15 @@ Parse.enableLocalDatastore();
 
 
 export const ChatScreen = (props) => {
+  // const to = props.to;
+  // will allow "to" to be set when this
+  // screen is navigated to from AnnouncementsScreen
+  const route = props.route;
+  const params = route.params;
+  const to = params.to;
+
+  // TODO: Implement getting specific messages with 
+  // user "to"
   let parseQuery = new Parse.Query(global.school + "Messages");
   parseQuery.descending('createdAt');
 
@@ -36,6 +43,7 @@ export const ChatScreen = (props) => {
     async function getCurrentUser() {
       currentUser = global.id;
     }
+
     setMessages([
       {
         _id: 1,
@@ -58,7 +66,7 @@ export const ChatScreen = (props) => {
     let message = new Message();
     message.set('from', global.id);
     message.set('content', messages[0].text);
-    message.set('to', props.to);
+    message.set('to', to);
 
     message.save();
   }, [])
@@ -81,4 +89,3 @@ export const ChatScreen = (props) => {
     />
   )
 }
-

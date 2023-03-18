@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, ScrollView, View, Image, SafeAreaView, StatusBar } from 'react-native';
 import { Button, ActivityIndicator, Card, IconButton, Text, TextInput, Divider } from 'react-native-paper';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import { Camera } from 'expo-camera';
@@ -22,16 +23,7 @@ Parse.serverURL = 'https://parseapi.back4app.com/';
 const Stack = createStackNavigator();
 
 export const GalleryScreen = (props) => {
-  const [clubs, setClubs] = useState([]);
-  
-  const setClubData = async () => {
-    const results = await getClubs();
-    setClubs(results);
-  }
-
-  useEffect(() => {
-    setClubData();
-  }, []);
+  const navigation = props.navigation;
 
   return (
     <Stack.Navigator initialRouteName='GalleryMainSubScreen'>
@@ -92,9 +84,10 @@ const GalleryMainSubScreen = props => {
     setAllCards(allCards);
   }
 
-  useEffect(() => {
+  // like useEffect, except also runs when screen receives focus
+  useFocusEffect(useCallback(() => {
     setClubData();
-  }, []);
+  }, []));
   
   return (
     <ScrollView>
