@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Card, Text } from 'react-native-paper';
+import { ActivityIndicator, Surface, Text } from 'react-native-paper';
 
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
@@ -51,15 +51,15 @@ const ProfileDisplay = props => {
   // });
 
   return (
-    <View>
-      <Text>Name: {name}</Text>
-      <Text>Id: {id}</Text>
-      <Text>Role: {role}</Text>
-      <Text>School: {school}</Text>
+    <Surface style={styles.surface} elevation={3}>
+      <Text variant={'bodyLarge'} style={styles.text}>Name: {name}</Text>
+      <Text variant={'bodyLarge'} style={styles.text}>Id: {id}</Text>
+      <Text variant={'bodyLarge'} style={styles.text}>Role: {role}</Text>
+      <Text variant={'bodyLarge'} style={styles.text}>School: {school}</Text>
       {/* <View>
         {relatedPeopleArr}
       </View> */}
-    </View>
+    </Surface>
   );
 }
 
@@ -79,5 +79,11 @@ const getProfileData = async () => {
 }
 
 const styles = StyleSheet.create({
-  
+  surface: {
+    padding: 25,
+    margin: 25,
+  },
+  text: {
+    
+  }
 });

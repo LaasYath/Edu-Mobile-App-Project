@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { StyleSheet, ScrollView, View, Image, SafeAreaView } from 'react-native';
-import { Menu, Button, ActivityIndicator, Card, IconButton, Text, Divider, Appbar } from 'react-native-paper';
+import { StyleSheet, ScrollView, View, Image, SafeAreaView, StatusBar } from 'react-native';
+import { Button, ActivityIndicator, Card, IconButton, Text, TextInput, Divider } from 'react-native-paper';
+
+import { Ionicons } from '@expo/vector-icons';
+
+import { createStackNavigator } from '@react-navigation/stack';
 
 import { Camera } from 'expo-camera';
 import { shareAsync } from 'expo-sharing';
@@ -15,64 +19,82 @@ Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
 Parse.serverURL = 'https://parseapi.back4app.com/';
 
+const Stack = createStackNavigator();
+
 export const GalleryScreen = (props) => {
-  const loading = <ActivityIndicator 
-    animating={true} 
-    style={{ marginTop: 10, marginBottom: 10 }}
-  />;
-
-  const [displayScreen, setDisplayScreen] = useState(<View>{loading}</View>);
-
-  const setClubs = async () => {
+  const [clubs, setClubs] = useState([]);
+  
+  const setClubData = async () => {
     const results = await getClubs();
-    // const clubs = results.map((step, move) => step.name);
-    const resetToGalleryMainSubScreen = () => setDisplayScreen(<GalleryMainSubScreen 
-      data={results}
-      display={setDisplayScreen}
-      goBack={resetToGalleryMainSubScreen}
-    />);
-
-    // console.log(clubs);
-
-    setDisplayScreen(<GalleryMainSubScreen 
-      data={results}
-      display={setDisplayScreen}
-      goBack={resetToGalleryMainSubScreen}
-    />)
+    setClubs(results);
   }
 
   useEffect(() => {
-    setClubs();
+    setClubData();
   }, []);
 
   return (
-    <View>
-      {displayScreen}
-    </View>
+    <Stack.Navigator initialRouteName='GalleryMainSubScreen'>
+      <Stack.Screen 
+        name="GalleryMainSubScreen"
+        component={GalleryMainSubScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SubGallery"
+        component={Gallery}
+        options={{ title: 'Gallery' }}
+      />
+      <Stack.Screen
+        name="AddImage"
+        component={AddImageScreen}
+        initialParams={{ club: 'Test' }}
+        options={{ title: 'Add Image'}}
+      />
+    </Stack.Navigator>
   )
 }
 
 const GalleryMainSubScreen = props => {
-  const data = props.data;
-  const display = props.display;
-  const goBack = props.goBack;
+  const navigation = props.navigation;
+  // const display = props.display;
+  // const goBack = props.goBack;
 
-  const cards = data.map((step, move) => {
-    return ([
-      <GalleryCard 
-        subject={step.name}
-        onPress={() => display(
-          <Gallery 
-            club={step.name}
-            goBack={goBack}
-          />
-        )}
-        key={move}
-      />, step.owned]);
-  });
+  const [ownedCards, setOwnedCards] = useState(<ActivityIndicator 
+    animating={true} 
+    style={{ marginTop: 10, marginBottom: 10 }}
+  />);
+  const [allCards, setAllCards] = useState(<ActivityIndicator 
+    animating={true} 
+    style={{ marginTop: 10, marginBottom: 10 }}
+  />);
+  // const [screens, setScreens] = useState([]);
+  
+  const setClubData = async () => {
+    const data = await getClubs();
+    // const clubs = results.map((step, move) => step.name);
+    
+    const cards = data.map((step, move) => {
+      return ([
+        <GalleryCard 
+          subject={step.name}
+          onPress={() => navigation.navigate('SubGallery', {
+            club: step.name
+          })}
+          key={move}
+        />, step.owned]);
+    });
 
-  const ownedCards = cards.filter(card => card[1]).map((step, move) => step[0]);
-  const allCards = cards.filter(card => card[0]).map((step, move) => step[0]);
+    const ownedCards = cards.filter(card => card[1]).map((step, move) => step[0]);
+    const allCards = cards.map((step, move) => step[0]);
+    
+    setOwnedCards(ownedCards);
+    setAllCards(allCards);
+  }
+
+  useEffect(() => {
+    setClubData();
+  }, []);
   
   return (
     <ScrollView>
@@ -132,7 +154,56 @@ const getClubs = async () => {
   return await new Promise((res) => setTimeout(() => res(ret), 1000));
 }
 
+const Gallery = props => {
+  const route = props.route;
+  const params = route.params;
+  const club = params.club;
+
+  const navigation = props.navigation;
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: club,
+      headerRight: () => <AddImageButton club={club} navigation={navigation} />
+    })
+  })
+
+  return(
+    <View>
+      <ScrollView>
+        <ImageList club={club}/>
+      </ScrollView>
+    </View>
+  );
+}
+
+const AddImageButton = props => {
+  const club = props.club;
+  const navigation = props.navigation;
+
+  return (
+    <IconButton 
+      icon='plus'
+      onPress={() => {
+        navigation.navigate('AddImage', { club: club })
+      }}
+    />
+  )
+}
+
 const AddImageScreen = props => {
+  const route = props.route;
+  const params = route.params;
+  const club = params.club;
+  
+  const navigation = props.navigation;
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Add Image for " + club
+    });
+  }, [])
+
   let cameraRef = useRef();
   const [hasCameraPermission, setHasCameraPermission] = useState();
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
@@ -174,7 +245,7 @@ const AddImageScreen = props => {
       userNewPhoto.set('img_b64', photo.base64);
       userNewPhoto.set('caption', caption);
       userNewPhoto.set('uploader', userObj.get('name'));
-      userNewPhoto.set('club', '');
+      userNewPhoto.set('club', club);
       const result = await userNewPhoto.save();
 
       alert("Your photo has been uploaded!");
@@ -201,6 +272,7 @@ const AddImageScreen = props => {
         </Button>
         {/* TODO:
         * implement close camera 
+        * unneeded?
         */}
         <Button title="Close Camera" onPress={console.log('implement close camera')}> 
           Close Camera
@@ -221,42 +293,6 @@ const AddImageScreen = props => {
   );
 }
 
-const Gallery = props => {
-  const [filter, setFilter] = useState("Favorite");
-  const club = props.club;
-  const goBack = props.goBack;
-
-  const loading = <ActivityIndicator 
-    animating={true} 
-    style={{ marginTop: 10, marginBottom: 10 }}
-  />;
-
-  const [displayScreen, setDisplayScreen] = useState(<View>{loading}</View>);
-
-  const selectFilter = (selectedFilter) => {
-    setFilter(selectedFilter);
-  }
-
-  return(
-    <View>
-      <Appbar.Header statusBarHeight={0}>
-        <Appbar.BackAction onPress={goBack} />
-        <Appbar.Content title={club} />
-        {/* TODO
-        * open 'AddImageScreen' when user hits plus button
-        */}
-        <Appbar.Action icon={'plus'} onPress={(console.log("show AddImageScreen component so user can take pics and directly upload them"))} />
-      </Appbar.Header>
-      <ScrollView>
-        <View style={styles.layout}>
-          <MiniMenu filter={filter} selectFilter={selectFilter} />
-        </View>
-        <ImageList club={club} filter={filter}/>
-      </ScrollView>
-    </View>
-  );
-}
-
 const ImageList = (props) => {
   const [images, setImages] = useState(<ActivityIndicator 
                                           animating={true} 
@@ -266,9 +302,10 @@ const ImageList = (props) => {
   const club = props.club;
 
   //TODO: keep images from overflowing past page, flex-column?
-  async function getImages(filter) {
+  // is it not wrapping? it wraps for me
+  async function getImages() {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
-    const data = await getFilteredImages(club, filter);
+    const data = await getFilteredImages(club);
 
     const imgComponents = data.map((step, move) => {
       return (
@@ -297,11 +334,9 @@ const ImageList = (props) => {
     setImages(<View style={styles.imgMatrixLayout}>{imgMatrix}</View>);
   }
 
-  // see ClubsScreen.js for explanation
-  // need to observe props.filter because images should change when that filter is changed
   useEffect(() => {
-    getImages(props.filter);
-  }, [props.filter])
+    getImages();
+  }, [])
 
   return (
     <View>
@@ -326,7 +361,7 @@ const ImageCard = props => {
   );
 }
 
-async function getFilteredImages(club, filter) {
+async function getFilteredImages(club) {
   /* RETURN FORMAT: [{
     src: str
     postedBy: str
@@ -351,89 +386,6 @@ async function getFilteredImages(club, filter) {
   const promise = new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve(ret);
-    }, 1000)
-  })
-  
-  return await promise;
-}
-
-const MiniMenu = (props) => {
-  const selectFilter = (filter) => {
-    props.selectFilter(filter)
-    closeMenu();
-  }
-
-  const [visible, setVisible] = useState(false);
-  const [options, setOptions] = useState(
-    <View>
-        <MiniMenuOption filter={"Favorite"} selectFilter={selectFilter} />
-        <MiniMenuOption filter={"School"} selectFilter={selectFilter} />
-    </View>
-  );
-
-  const filter = props.filter;
-
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
-
-  async function getOptions() {
-    const clubNames = await getAvailableFilters();
-
-    const opts = clubNames.map((step, move) => {
-      return (
-        <MiniMenuOption key={move} filter={step.name} selectFilter={selectFilter} />
-      )
-    })
-
-    setOptions(
-      <View>
-        <MiniMenuOption filter={"Favorite"} selectFilter={selectFilter} />
-        <MiniMenuOption filter={"School"} selectFilter={selectFilter} />
-        {opts}
-      </View>
-    );
-  }
-
-  // see ClubsScreen.js for explanation
-  // (don't need to watch any vars bc just doing once)
-  useEffect(() => {
-    getOptions();
-  }, []);
-
-  return (
-    <View style={styles.menuContainer}>
-      <Menu 
-        visible={visible}
-        onDismiss={closeMenu}
-        anchor={<Button mode="outlined" onPress={openMenu} style={styles.menu}>{filter}</Button>}
-      >
-        {options}
-      </Menu>
-    </View>
-  )
-}
-
-const MiniMenuOption = (props) => {
-  const filter = props.filter;
-  const selectFilter = props.selectFilter;
-  
-  return (
-    <Menu.Item onPress={() => {selectFilter(filter)}} style={styles.menuItem} title={filter} />
-  )
-}
-
-// TODO: remove filters, not enough time
-async function getAvailableFilters() {
-  /* RETURN FORMAT:
-  [
-  {
-    name: "club name"
-  },...
-  ]
-   */
-  const promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve([{ name: "Club 1" }, { name: "Club 2" }]);
     }, 1000)
   })
   
