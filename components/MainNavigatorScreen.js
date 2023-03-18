@@ -9,6 +9,7 @@ import { CalendarScreen } from './CalendarScreen.js';
 import { HomeScreen } from './HomeScreen.js';
 import { ClubsScreen } from './ClubsScreen.js';
 import { ChatScreen } from './ChatScreen.js';
+import { ListChats } from './ListChats.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,7 +62,7 @@ export const MainNavigatorScreen = (props) => {
       }}
       component={ClubsScreen} />
 
-      <Tab.Screen name="Chat" size="50px"
+      <Tab.Screen name="List" size="50px"
       options={{
         tabBarActiveTintColor: '#b042ff',
         tabBarInactiveTintColor: 'grey',
@@ -71,7 +72,8 @@ export const MainNavigatorScreen = (props) => {
           <Ionicons name="chatbox-ellipses" color={color} size={size} />
         ),
       }}
-      component={ChatScreen} />
+      component={ListChats} />
+
     </Tab.Navigator>
   );
 }

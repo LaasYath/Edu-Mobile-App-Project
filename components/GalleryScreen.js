@@ -242,7 +242,7 @@ const AddImageScreen = props => {
       const userObj = await userQuery.get(global.id);
       const userNewPhoto = new Parse.Object(global.school + "Gallery");
       userNewPhoto.set('album', '');
-      userNewPhoto.set('img_b64', photo.base64);
+      userNewPhoto.set('img_b64', "data:image/jpg;base64," + photo.base64);
       userNewPhoto.set('caption', caption);
       userNewPhoto.set('uploader', userObj.get('name'));
       userNewPhoto.set('club', club);
@@ -269,13 +269,6 @@ const AddImageScreen = props => {
         {hasMediaLibraryPermission ? <Button title="Save" onPress={() => savePhoto()}> Save Picture </Button> : undefined}
         <Button title="Discard" onPress={() => setPhoto(undefined)}> 
           Discard Picture
-        </Button>
-        {/* TODO:
-        * implement close camera 
-        * unneeded?
-        */}
-        <Button title="Close Camera" onPress={console.log('implement close camera')}> 
-          Close Camera
         </Button>
       </SafeAreaView>
     );
@@ -377,7 +370,7 @@ async function getFilteredImages(club) {
   for (const pic of results) {
     let clubPic = {
       src: pic.get('img_b64'),
-      postedBy: pic.get('uplaoder'),
+      postedBy: pic.get('uploader'),
       caption: pic.get('caption')
     }
     ret.push(clubPic);
