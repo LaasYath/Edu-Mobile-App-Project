@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 

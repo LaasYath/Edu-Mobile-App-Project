@@ -5,9 +5,17 @@ import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
 
 export const ReportAbsenceScreen = props => {
+  const navigation = props.navigation;
+
   const isAdmin = () => {
     return global.role === 'admin';
   }
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: isAdmin() ? "View Absences" : "Report Absence",
+    })
+  })
 
   return (
     <View>
