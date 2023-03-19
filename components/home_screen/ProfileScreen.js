@@ -65,7 +65,7 @@ const ProfileDisplay = props => {
 
 /* TO-DO: include parent information in profile */
 const getProfileData = async () => {
-  let ret
+  let ret;
   const userQuery = new Parse.Query(global.school);
   const userObj = await userQuery.get(global.id);
   ret = {
