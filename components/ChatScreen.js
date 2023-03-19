@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
-import { useParseQuery } from '@parse/react-native';
 
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -13,7 +12,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5acmsKMCCgJwJx1Kd7Shc6VPq');
 Parse.serverURL = 'https://edumediaapp.b4a.io/';
-// it wasn't working until I disabled this...
 Parse.enableLocalDatastore();
 
 
@@ -30,11 +28,13 @@ export const ChatScreen = (props) => {
 
   const [messages, setMessages] = useState([]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: "Chat with " + toName,
-    })
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: "Chat with " + toName,
+      })
+    }, [toName])
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -62,15 +62,10 @@ export const ChatScreen = (props) => {
         fullConvo.descending('createdAt');
 
         const res = await fullConvo.find();
-        // console.log(res);
-        // setResults(res);
         setMessages(res);
       })();
     }, [to])
   );
-
-  // console.log(messages);
-  // console.log(messages?.length);
 
   const onSend = useCallback((messages = []) => {
   
@@ -85,21 +80,6 @@ export const ChatScreen = (props) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, message));
   }, [to])
 
-  {/*<GiftedChat
-    messages={results && results.map(liveMessage => ({
-      _id: liveMessage.id,
-      text: liveMessage.get('content'),
-      createAt: liveMessage.get('createdAt'),
-      user: {
-        _id: 2,
-        name: 'React Native',
-      }
-    }))}
-    onSend={messages => onSend(messages)}
-    user={{
-      _id: 1,
-    }}
-  />*/}
   return (
     <View style={styles.layout}>
       <GiftedChat
