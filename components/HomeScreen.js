@@ -26,8 +26,7 @@ import { ReportAbsenceScreen } from './home_screen/ReportAbsenceScreen.js';
 const Stack = createStackNavigator();
 
 export const HomeScreen = (props) => {
-  const navigation = props.navigation;
-  // console.log(navigation === null);
+  console.log(global.role);
 
   return(
     <Stack.Navigator>
@@ -185,7 +184,7 @@ const ClassCard = props => {
   const teacher = props.teacher;
   const period = props.period
 
-  if (global.role != 'educator') {
+  if (global.role !== 'educator') {
     return (
       <Card style={styles.classCard}>
         <Card.Title title={period + ". " + className}/>
@@ -194,7 +193,7 @@ const ClassCard = props => {
         </Card.Content>
       </Card>
     );
-  } else if (global.role == 'educator') {
+  } else if (global.role === 'educator') {
     return (
       <Card style={styles.classCard}>
         <Card.Title title={period + ". " + className}/>

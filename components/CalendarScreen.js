@@ -131,7 +131,7 @@ export const CalendarScreen = (props) => {
 
       <Divider style={styles.divider} />
 
-      <NewEventComponent onAddEvent={onAddEvent} currentDate={currentDate}/>
+      {(global.role !== 'parent') ? <NewEventComponent onAddEvent={onAddEvent} currentDate={currentDate}/> : null}
 
       <ScrollView>
         {dateCards}
@@ -222,8 +222,21 @@ const getDates = async () => {
   //get related club and school events
   let searchUser = global.school;
   const queryStudent = new Parse.Query(searchUser);
-  //get student object of specific id 
-  const objectStudent = await queryStudent.get(global.id);
+  //get student object of specific id
+  let objectStudent;
+  if (global.role !== 'parent') {
+    objectStudent = await queryStudent.get(global.id);
+  } else {
+    const parentObj = await queryStudent.get(global.id);
+    const childUID = parentObj.get("child1");
+    
+    const childQuery = new Parse.Query(global.school);
+    childQuery.equalTo('uID', Number(childUID));
+    const idResults = await childQuery.find();
+
+    objectStudent = idResults[0];
+  } 
+  
   //save object data to reponse
   const responseStudent = await objectStudent.save();
   //store user's clubs
@@ -478,7 +491,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     height: 40,
     borderRadius: 75,
-    marginRight: 10
+    marginRight: 10,
+    marginBottom: 10,
   },
   addEventText: {
     alignSelf: 'center',

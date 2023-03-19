@@ -69,7 +69,8 @@ const GalleryMainSubScreen = props => {
         <GalleryCard 
           subject={step.name}
           onPress={() => navigation.navigate('SubGallery', {
-            club: step.name
+            club: step.name,
+            owned: step.owned,
           })}
           key={move}
         />, step.owned]);
@@ -120,18 +121,26 @@ const GalleryCard = props => {
 
 const getClubs = async () => {
   let userQuery = new Parse.Query(global.school);
-  let searchID;
-  if (global.role !== 'p') {
-    searchID = global.id;
+  let userObj;
+  if (global.role !== 'parent') {
+    userObj = await userQuery.get(global.id);
   } else {
-    // idk if this actually works
-    const parentObj = await queryStudent.get(global.id);
-    await parentObj.fetch();
-    console.log(parentObj.get("child1"))
-    searchID = parentObj.get("child1");
+    const parentObj = await userQuery.get(global.id);
+
+    //console.log("child id:")
+    //console.log(parentObj.get("child1"))
+    let childUID = parentObj.get("child1");
+
+    const userQuery2 = new Parse.Query(global.school);
+    userQuery2.equalTo('uID', Number(childUID));
+    const idResults = await userQuery2.find();
+
+    /*for (const userChild of idResults) {
+      console.log(userChild.get('uID'));
+    }*/
+    userObj = idResults[0];
   }
 
-  let userObj = await userQuery.get(searchID);
   let clubs = userObj.get('clubs');
   let ownedClubs = userObj.get('ownedClubs');
   let ret = [];
@@ -160,13 +169,18 @@ const Gallery = props => {
   const route = props.route;
   const params = route.params;
   const club = params.club;
+  const owned = params.owned;
 
   const navigation = props.navigation;
+
+  const canUserPost = () => (
+    owned && global.role !== 'parent'
+  );
 
   useEffect(() => {
     navigation.setOptions({
       title: club,
-      headerRight: () => (global.role !== 'p') ? <AddImageButton club={club} navigation={navigation} /> : null,
+      headerRight: () => (canUserPost()) ? <AddImageButton club={club} navigation={navigation} /> : null,
     })
   })
 
@@ -212,19 +226,23 @@ const AddImageScreen = props => {
   const [photo, setPhoto] = useState();
   const [captionText, setCaptionText] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      const cameraPermission = await Camera.requestCameraPermissionsAsync();
-      const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
-      setHasCameraPermission(cameraPermission.status === "granted");
-      setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
-    })();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const cameraPermission = await Camera.requestCameraPermissionsAsync();
+        const mediaLibraryPermission = await MediaLibrary.requestPermissionsAsync();
+        setHasCameraPermission(cameraPermission.status === "granted");
+        setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
+        console.log(cameraPermission);
+        console.log(mediaLibraryPermission);
+      })();
+    }, [])
+  );
 
   if (hasCameraPermission === undefined) {
-    return <Text>Requesting permissions...</Text>
+    return <Text style={{ margin: 10 }}>Requesting permissions...</Text>
   } else if (!hasCameraPermission) {
-    return <Text>Permission for camera not granted. Please change this in settings.</Text>
+    return <Text style={{ margin: 10 }}>Permission for camera not granted. Please change this in settings.</Text>
   }
 
   let takePic = async () => {

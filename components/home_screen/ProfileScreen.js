@@ -75,7 +75,7 @@ const getProfileData = async () => {
     school: global.school,
   }
 
-  return await new Promise((res) => setTimeout(() => res(ret), 1000));
+  return ret;
 }
 
 const styles = StyleSheet.create({
