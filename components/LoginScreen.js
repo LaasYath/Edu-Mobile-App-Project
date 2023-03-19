@@ -107,19 +107,7 @@ export const LoginScreen = (props) => {
                                   global.id = object.id;
                                   global.uID = object.get('uID');
                                   global.school = schoolClassName;
-                                  
-                                  const numRole = Math.floor(Number(global.uID) / 1000000);
-                                  if (numRole === 1) 
-                                    global.role = 's';
-
-                                  else if (numRole === 2)
-                                    global.role = 'p';
-
-                                  else if (numRole === 3)
-                                    global.role = 'e';
-
-                                  // global.role = s | p | e 
-                                  // student, parent, educator respectively
+                                  global.role = object.get('role');
                                   
                                   setUser(true);
                                 }

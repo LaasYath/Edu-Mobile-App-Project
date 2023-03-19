@@ -23,8 +23,24 @@ export const ChatScreen = (props) => {
 
   // TODO: Implement getting specific messages with 
   // user "to"
-  let parseQuery = new Parse.Query(global.school + "Messages");
-  parseQuery.descending('createdAt');
+  let toQuery1 = new Parse.Query(global.school + "Messages");
+  toQuery1.equalTo('to', to);
+  
+  let fromQuery1 = new Parse.Query(global.school+"Messages");
+  fromQuery1.equalTo('from', global.id);
+
+  let composedQuery1 = new Parse.Query.and(toQuery1, fromQuery1);
+
+  let toQuery2 = new Parse.Query(global.school + "Messages");
+  toQuery2.equalTo('from', to);
+  
+  let fromQuery2 = new Parse.Query(global.school+"Messages");
+  fromQuery2.equalTo('to', global.id);
+
+  let composedQuery2 = new Parse.Query.and(toQuery2, fromQuery2);
+
+  const fullConvo = new Parse.Query.or(composedQuery1, composedQuery2);
+  fullConvo.descending('createdAt');
 
   let currentUser;
   const [messages, setMessages] = useState([]);
@@ -37,7 +53,7 @@ export const ChatScreen = (props) => {
     count,
     error,
     reload
-  } = useParseQuery(parseQuery);
+  } = useParseQuery(fullConvo);
 
   useEffect(() => {
     async function getCurrentUser() {

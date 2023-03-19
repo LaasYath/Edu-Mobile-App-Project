@@ -28,7 +28,6 @@ const Stack = createStackNavigator();
 export const HomeScreen = (props) => {
   const navigation = props.navigation;
   // console.log(navigation === null);
-  console.log(global.role);
 
   return(
     <Stack.Navigator>
@@ -77,14 +76,24 @@ const HomeMainSubScreen = props => {
     let count = 0;
     const cardResults = data.map((step, move) => {
       count += 1;
-      return (
-        <ClassCard 
-          className={step.className}
-          teacher={step.teacher}
-          key={move}
-          period={count}
-        />
-      );
+      if (global.role != 'educator') {
+        return (
+          <ClassCard 
+            className={step.className}
+            teacher={step.teacher}
+            key={move}
+            period={count}
+          />
+        );
+      } else if (global.role == 'educator') {
+        return (
+          <ClassCard 
+            className={step.className}
+            key={move}
+            period={count}
+          />
+        );
+      }
     });
 
     setCards(<View>{cardResults}</View>);
@@ -176,14 +185,22 @@ const ClassCard = props => {
   const teacher = props.teacher;
   const period = props.period
 
-  return (
-    <Card style={styles.classCard}>
-      <Card.Title title={period + ". " + className}/>
-      <Card.Content>
-        <Text variant={'bodyMedium'}>  Teacher: {teacher}</Text>
-      </Card.Content>
-    </Card>
-  );
+  if (global.role != 'educator') {
+    return (
+      <Card style={styles.classCard}>
+        <Card.Title title={period + ". " + className}/>
+        <Card.Content>
+          <Text variant={'bodyMedium'}>  Teacher: {teacher}</Text>
+        </Card.Content>
+      </Card>
+    );
+  } else if (global.role == 'educator') {
+    return (
+      <Card style={styles.classCard}>
+        <Card.Title title={period + ". " + className}/>
+      </Card>
+    );
+  }
 }
 
 /**
@@ -200,44 +217,94 @@ const ClassCard = props => {
  * note: be sure this is in the correct order
  */
 const getClasses = async () => {
-  const userQuery = new Parse.Query(global.school);
-  const userObj = await userQuery.get(global.id);
-  const classes = userObj.get('classes');
-  const teachers = userObj.get('teachers');
-  let ret = [
-    {
-      className: classes[0],
-      teacher: teachers[0],
-    },
-    {
-      className: classes[1],
-      teacher: teachers[1],
-    },
-    {
-      className: classes[2],
-      teacher: teachers[2],
-    },
-    {
-      className: classes[3],
-      teacher: teachers[3],
-    },
-    {
-      className: classes[4],
-      teacher: teachers[4],
-    },
-    {
-      className: classes[5],
-      teacher: teachers[5],
-    },
-    {
-      className: classes[6],
-      teacher: teachers[6],
-    },
-    {
-      className: classes[7],
-      teacher: teachers[7],
-    },
-  ];
+  let ret;
+  let classes;
+  let teachers;
+  if (global.role != 'educator') {
+    if (global.role == 'student') {
+      const userQuery = new Parse.Query(global.school);
+      const userObj = await userQuery.get(global.id);
+      classes = userObj.get('classes');
+      teachers = userObj.get('teachers');
+    } else if (global.role == 'parent') {
+      const userQuery = new Parse.Query(global.school);
+      const userObj = await userQuery.get(global.id);
+      let userKidId = userObj.get('child1');
+      
+      const userQuery2 = new Parse.Query(global.school);
+      userQuery2.equalTo('uID', Number(userKidId));
+      const results = await userQuery2.find();
+      for (const userKid of results) {
+        console.log(userKid.get('classes'));
+        classes = userKid.get('classes');
+        teachers = userKid.get('teachers');
+      }
+    }
+    ret = [
+      {
+        className: classes[0],
+        teacher: teachers[0],
+      },
+      {
+        className: classes[1],
+        teacher: teachers[1],
+      },
+      {
+        className: classes[2],
+        teacher: teachers[2],
+      },
+      {
+        className: classes[3],
+        teacher: teachers[3],
+      },
+      {
+        className: classes[4],
+        teacher: teachers[4],
+      },
+      {
+        className: classes[5],
+        teacher: teachers[5],
+      },
+      {
+        className: classes[6],
+        teacher: teachers[6],
+      },
+      {
+        className: classes[7],
+        teacher: teachers[7],
+      },
+    ];
+  } else if (global.role == 'educator') {
+    const userQuery = new Parse.Query(global.school);
+    const userObj = await userQuery.get(global.id);
+    classes = userObj.get('classes');
+    ret = [
+      {
+        className: classes[0],
+      },
+      {
+        className: classes[1],
+      },
+      {
+        className: classes[2],
+      },
+      {
+        className: classes[3],
+      },
+      {
+        className: classes[4],
+      },
+      {
+        className: classes[5],
+      },
+      {
+        className: classes[6],
+      },
+      {
+        className: classes[7],
+      },
+    ];
+  }
 
   return await new Promise((res) => setTimeout(() => res(ret), 1000));
 }
