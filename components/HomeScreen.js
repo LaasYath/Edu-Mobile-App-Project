@@ -28,6 +28,7 @@ const Stack = createStackNavigator();
 export const HomeScreen = (props) => {
   const navigation = props.navigation;
   // console.log(navigation === null);
+  console.log(global.role);
 
   return(
     <Stack.Navigator>
