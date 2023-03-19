@@ -25,6 +25,10 @@ import { ReportAbsenceScreen } from './home_screen/ReportAbsenceScreen.js';
 // to refactor previous code
 const Stack = createStackNavigator();
 
+const isAdmin = () => {
+  return global.role === 'admin';
+}
+
 export const HomeScreen = (props) => {
   console.log(global.role);
 
@@ -54,6 +58,9 @@ export const HomeScreen = (props) => {
       <Stack.Screen 
         name="Report Absence" 
         component={ReportAbsenceScreen} 
+        options={{
+          title: (isAdmin()) ? 'View Absences' : 'Report Absence',
+        }}
       />
     </Stack.Navigator>
   );
@@ -141,7 +148,7 @@ const Options = props => {
         <Option
           icon={'calendar-remove'}
           onPress={() => navigation.navigate('Report Absence')}
-          caption={'Report Absence'}
+          caption={(isAdmin()) ? 'View Absences' : 'Report Absence'}
         />
         <Option 
           icon={'cellphone'}

@@ -9,7 +9,6 @@ export const ReportBugScreen = props => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // TODO: Implement async onSubmit()
   const onSubmit = async () => {
     if (!locationText || !descText) {
       setErrorText("Please in all fields.")
@@ -85,7 +84,6 @@ export const ReportBugScreen = props => {
 const styles = StyleSheet.create({
   layout: {
     marginHorizontal: 10,
-    paddingBottom: 100,
   },
   title: {
     alignSelf: 'center',

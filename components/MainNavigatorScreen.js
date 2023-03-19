@@ -64,7 +64,6 @@ export const MainNavigatorScreen = (props) => {
 
       <Tab.Screen name="Announcements" size="50px"
       options={{
-        title: 'Chat',
         tabBarActiveTintColor: '#b042ff',
         tabBarInactiveTintColor: 'grey',
         tabBarBadge: 3,
@@ -72,6 +71,7 @@ export const MainNavigatorScreen = (props) => {
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="chatbox-ellipses" color={color} size={size} />
         ),
+        title: 'Chat',
       }}
       component={AnnouncementsScreen} />
 
