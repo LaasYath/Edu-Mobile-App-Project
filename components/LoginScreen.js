@@ -257,7 +257,7 @@ const NewAccountModal = props => {
   }, [visible])
 
   return (
-    <Modal avoidKeyboard visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
+    <Modal /*avoidKeyboard*/ visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalStyle}>
       <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null}>
         <ScrollView>
           <Text style={styles.title}>
