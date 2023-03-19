@@ -360,9 +360,9 @@ const ClubOptionsMenuBrowse = (props) => {
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
         {(global.role !== 'parent') ? <Menu.Item onPress={joinClub} title='Join Club' /> : null}
-        <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
+        {(Platform.OS === 'ios') ? <Menu.Item onPress={linkToInsta} title='Share to Instagram' /> : null}
         <Menu.Item onPress={savePhoto} title='Save Poster' />
-        <Menu.Item onPress={share} title='Other' />
+        <Menu.Item onPress={share} title='Share' />
       </Menu>
     </View>
   )
@@ -476,9 +476,9 @@ const ClubOptionsMenuPersonal = (props) => {
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
         {(global.role !== 'parent') ? <Menu.Item onPress={leaveClub} title='Leave Club' /> : null}
-        <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
+        {(Platform.OS === 'ios') ? <Menu.Item onPress={linkToInsta} title='Share to Instagram' /> : null}
         <Menu.Item onPress={savePhoto} title='Save Poster' />
-        <Menu.Item onPress={share} title='Other' />
+        <Menu.Item onPress={share} title='Share' />
       </Menu>
     </View>
   )
