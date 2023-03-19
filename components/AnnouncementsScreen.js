@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Text } from 'react-native';
-import { List, Divider, Button } from 'react-native-paper';
+import { View, StyleSheet, FlatList } from 'react-native';
+import { Searchbar, Divider, Button } from 'react-native-paper';
 import { useParseQuery } from '@parse/react-native';
-import { useNavigation } from '@react-navigation/native';
 
 //Initialize Parse/Connect to Back4App db
 import Parse from "parse/react-native.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 //Initialize sdk
 Parse.setAsyncStorage(AsyncStorage);
@@ -17,6 +15,13 @@ Parse.enableLocalDatastore();
 
 export const AnnouncementsScreen = props => {
   const navigation = props.navigation;
+  const [userName, setUserName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // TODO: Implement async onChangeSearch()
+  const onChangeSearch = async query => {
+    setSearchQuery(query);
+  }
 
   let parseQuery = new Parse.Query(global.school);
   if (global.role == 'student' || global.role == 'parent') {
@@ -36,9 +41,23 @@ export const AnnouncementsScreen = props => {
   } = useParseQuery(parseQuery);
 
   // console.log(item.id);
+  useEffect(() => {
+    (async () => {
+      const userQuery = new Parse.Query(global.school);
+      const userObj = await userQuery.get(global.id);
+
+      console.log(userObj.get("name"));
+      setUserName(userObj.get("name"));
+    })();
+  }, []);
 
   return (
   <View style={styles.container}>
+    <Searchbar
+      placeholder='Search People'
+      onChangeText={onChangeSearch}
+      value={searchQuery}
+    />
     <FlatList
       data={results}
       keyExtractor={(item) => item.id}
@@ -50,7 +69,11 @@ export const AnnouncementsScreen = props => {
           onPress={() => {
             // will be passed to:
             // props.route.params.to
-            navigation.navigate('Chat', {to: item.id}); 
+            navigation.navigate('Chat', {
+              to: item.id,
+              toName: name,
+              fromName: userName,
+            }); 
             console.log(`going to chat with ${item.id}`)
           }}
           mode='text'
