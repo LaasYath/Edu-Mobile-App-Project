@@ -145,8 +145,8 @@ const getAbsences = async () => {
 
   let ret = [];
 
-  const AustinHighSchoolAbsences = Parse.Object.extend('AustinHighSchoolAbsences');
-  const query = new Parse.Query(AustinHighSchoolAbsences);
+  const query = new Parse.Query(global.school + "Absences");
+  query.descending('date')
   // You can also query by using a parameter of an object
   // query.equalTo('objectId', 'xKue915KBG');
   try {
