@@ -316,6 +316,7 @@ const ImageList = (props) => {
 
   //TODO: keep images from overflowing past page, flex-column?
   // is it not wrapping? it wraps for me
+  // idea: use single <View> and just have flex-wrap
   async function getImages() {
     setImages(<ActivityIndicator animating={true} style={{ marginTop: 10, marginBottom: 10 }}/>)
     const data = await getFilteredImages(club);
