@@ -66,7 +66,6 @@ export const MainNavigatorScreen = (props) => {
       options={{
         tabBarActiveTintColor: '#b042ff',
         tabBarInactiveTintColor: 'grey',
-        tabBarBadge: 3,
         tabBarLabel: 'Chat',
         tabBarIcon: ({ color, size }) => (
           <Ionicons name="chatbox-ellipses" color={color} size={size} />

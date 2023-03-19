@@ -25,10 +25,6 @@ import { ReportAbsenceScreen } from './home_screen/ReportAbsenceScreen.js';
 // to refactor previous code
 const Stack = createStackNavigator();
 
-const isAdmin = () => {
-  return global.role === 'admin';
-}
-
 export const HomeScreen = (props) => {
   console.log(global.role);
 
@@ -58,9 +54,6 @@ export const HomeScreen = (props) => {
       <Stack.Screen 
         name="Report Absence" 
         component={ReportAbsenceScreen} 
-        options={{
-          title: (isAdmin()) ? 'View Absences' : 'Report Absence',
-        }}
       />
     </Stack.Navigator>
   );
@@ -78,11 +71,14 @@ const HomeMainSubScreen = props => {
   />);
 
   const getClassCards = async () => {
+    if (global.role === 'admin')
+      return;
+
     const data = await getClasses();
     let count = 0;
     const cardResults = data.map((step, move) => {
       count += 1;
-      if (global.role != 'educator') {
+      if (global.role === 'parent' || global.role === 'student') {
         return (
           <ClassCard 
             className={step.className}
@@ -91,7 +87,7 @@ const HomeMainSubScreen = props => {
             period={count}
           />
         );
-      } else if (global.role == 'educator') {
+      } else if (global.role === 'educator') {
         return (
           <ClassCard 
             className={step.className}
@@ -112,9 +108,14 @@ const HomeMainSubScreen = props => {
   return (
     <ScrollView>
       <Options navigation={navigation}/>
-      <Text variant={'headlineLarge'} style={{ marginLeft: 20 }}>Class Schedule</Text>
-      <Divider style={{ margin: 5 }}/>
-      {cards}
+      {(global.role !== 'admin') ?
+      <View>
+        <Text variant={'headlineLarge'} style={{ marginLeft: 20 }}>Class Schedule</Text>
+        <Divider style={{ margin: 5 }}/>
+        {cards}
+      </View> :
+      <Text style={styles.welcome}> Welcome! </Text>
+      }
     </ScrollView>
   );
 }
@@ -148,7 +149,7 @@ const Options = props => {
         <Option
           icon={'calendar-remove'}
           onPress={() => navigation.navigate('Report Absence')}
-          caption={(isAdmin()) ? 'View Absences' : 'Report Absence'}
+          caption={'Report Absence'}
         />
         <Option 
           icon={'cellphone'}
@@ -209,9 +210,7 @@ const ClassCard = props => {
   }
 }
 
-/**
- * TODO: Implement async getClasses()
- * 
+/*
  * return: 
  * [
  * {
@@ -318,6 +317,11 @@ const getClasses = async () => {
 const styles = StyleSheet.create({
   layout: {
     alignItems: 'center',
+  },
+  welcome: {
+    alignSelf: 'center',
+    marginTop: "33%",
+    fontSize: 30   
   },
   optionsRow: {
     flexDirection: 'row',

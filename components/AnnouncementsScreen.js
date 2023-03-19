@@ -24,9 +24,7 @@ export const AnnouncementsScreen = props => {
     let newQuery = new Parse.Query(global.school);
     if (global.role == 'student' || global.role == 'parent') {
       newQuery.equalTo('role', 'educator');
-    } else if (global.role == 'educator') {
-      newQuery.notEqualTo('role', 'educator');
-    } 
+    }
 
     setParseQuery(newQuery);
   }
