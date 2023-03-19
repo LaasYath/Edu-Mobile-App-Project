@@ -1,4 +1,6 @@
-# EduMedia
+# EduMedia ![](splashPage.PNG width="200" height="400")
+Logo created by Cindy Tran, 2023. (cindytran204@gmail.com)
+
 EduMedia is a cross-platform mobile application that connects students, parents, and educators by offering a platform to meet everyone's school-related needs. Communicate with teachers quickly using our live chat feature, browse offered clubs, view upcoming events, post pictures to school/club-wide galleries and so much more!
 
 ## Login
