@@ -26,7 +26,6 @@ const ReportAbsenceMainScreen = props => {
     setDateTxt(date.format("YYYY-MM-DD"));
   }
   
-  // TODO: Implement async onSubmit() for reporting absences
   const onSubmit = async () => {
     setIsLoading(true);
 
@@ -38,14 +37,34 @@ const ReportAbsenceMainScreen = props => {
 
     await new Promise(res => setTimeout(() => res(), 2000));
 
-    console.log(`Absence Reported:\n` +
-                ` Date: ${dateTxt}\n` +
-                ` Reason: ${reasonTxt}`); 
-    setDateTxt("");
-    setReasonTxt("");
-    setIsLoading(false);
-    alert("Your report has been sent.");
+    let userQuery = new Parse.Query(global.school);
+    let userObj = await userQuery.get(global.id);
+
+    const newAbsence = new Parse.Object(global.school + "Absences");
+    let date = dateTxt.replace(/-/g, "");
+    newAbsence.set('date', date);
+    newAbsence.set('name', await userObj.get('name'));
+    newAbsence.set('reason', reasonTxt);
+    newAbsence.set('uID', await userObj.get('uID'));
+    try {
+      const result = await newAbsence.save();
+      
+      return new Promise(res => setTimeout(() => {
+        setDateTxt("");
+        setReasonTxt("");
+        setIsLoading(false);
+        alert("Your report has been sent.");
+        return;
+      }, 1000));
+    } catch (error) {
+      console.error('Error while creating New Absence: ', error);
+      return new Promise(res => setTimeout(() => {
+        setIsLoading(false);
+        return;
+      }, 1000));
+    }
   }
+
 
   return (
     <KeyboardAvoidingView behavior={(Platform.OS === 'ios') ? "padding" : null}>
@@ -121,41 +140,35 @@ const ReportAbsenceAdminScreen = props => {
 
 // TODO: Implement async getAbsences()
 const getAbsences = async () => {
-  /**
-   * Return format:
-   * [
-   * {
-   *   name: str,
-   *   date: str,
-   *   reason: str,
-   * },...
-   * ]
-   * 
-   * date in YYYYMMDD format
-   */
-
-  // all for testing, can delete current functionality once backend
-  // is completed
+ 
   await new Promise(res => setTimeout(() => res(), 1000));
 
-  let ret = [
-    {
-      name: 'Jimmy',
-      date: '20220319',
-      reason: 'Sick',
-    },
-    {
-      name: 'Amy',
-      date: '20220321',
-      reason: 'Slept In',
-    },
-  ]
+  let ret = [];
 
-  Array(10).fill({
-    name: 'Test'.repeat(Math.round(Math.random() * 10)),
-    date: '20220315',
-    reason: 'A'.repeat(Math.round(Math.random() * 100)), 
-  }).forEach(report => ret.push(report))
+  const AustinHighSchoolAbsences = Parse.Object.extend('AustinHighSchoolAbsences');
+  const query = new Parse.Query(AustinHighSchoolAbsences);
+  // You can also query by using a parameter of an object
+  // query.equalTo('objectId', 'xKue915KBG');
+  try {
+    const results = await query.find();
+    for (const object of results) {
+      // Access the Parse Object attributes using the .GET method
+      const date = object.get('date')
+      const reason = object.get('reason')
+      const name = object.get('name')
+      const uID = object.get('uID')
+
+      let x = {
+        name: name,
+        date: date,
+        reason, reason,
+      }
+      ret.push(x);
+    }
+  } catch (error) {
+    console.error('Error while fetching AustinHighSchoolAbsences', error);
+  }
+ 
 
   return ret;
 }
