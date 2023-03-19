@@ -23,8 +23,6 @@ Parse.serverURL = 'https://parseapi.back4app.com/';
 const Stack = createStackNavigator();
 
 export const GalleryScreen = (props) => {
-  const navigation = props.navigation;
-
   return (
     <Stack.Navigator initialRouteName='GalleryMainSubScreen'>
       <Stack.Screen 
@@ -122,7 +120,18 @@ const GalleryCard = props => {
 
 const getClubs = async () => {
   let userQuery = new Parse.Query(global.school);
-  let userObj = await userQuery.get(global.id);
+  let searchID;
+  if (global.role !== 'p') {
+    searchID = global.id;
+  } else {
+    // idk if this actually works
+    const parentObj = await queryStudent.get(global.id);
+    await parentObj.fetch();
+    console.log(parentObj.get("child1"))
+    searchID = parentObj.get("child1");
+  }
+
+  let userObj = await userQuery.get(searchID);
   let clubs = userObj.get('clubs');
   let ownedClubs = userObj.get('ownedClubs');
   let ret = [];
@@ -157,7 +166,7 @@ const Gallery = props => {
   useEffect(() => {
     navigation.setOptions({
       title: club,
-      headerRight: () => <AddImageButton club={club} navigation={navigation} />
+      headerRight: () => (global.role !== 'p') ? <AddImageButton club={club} navigation={navigation} /> : null,
     })
   })
 

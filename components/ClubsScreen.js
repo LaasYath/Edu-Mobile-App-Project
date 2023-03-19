@@ -84,7 +84,18 @@ async function getUserClubCards() {
   let searchUser = global.school;
   const queryStudent = new Parse.Query(searchUser);
   //get student object of specific id 
-  const objectStudent = await queryStudent.get(global.id);
+  let searchID;
+  if (global.role !== 'p') {
+    searchID = global.id;
+  } else {
+    // idk if this actually works
+    const parentObj = await queryStudent.get(global.id);
+    await parentObj.fetch();
+    console.log(parentObj.get("child1"))
+    searchID = parentObj.get("child1");
+  }
+
+  const objectStudent = await queryStudent.get(searchID);
   //save object data to reponse
   const responseStudent = await objectStudent.save();
   //store user's clubs
@@ -348,7 +359,7 @@ const ClubOptionsMenuBrowse = (props) => {
         onDismiss={closeMenu}
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
-        <Menu.Item onPress={joinClub} title='Join Club' />
+        {(global.role !== 'p') ? <Menu.Item onPress={joinClub} title='Join Club' /> : null}
         <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
         <Menu.Item onPress={savePhoto} title='Save Poster' />
         <Menu.Item onPress={share} title='Other' />
@@ -464,7 +475,7 @@ const ClubOptionsMenuPersonal = (props) => {
         onDismiss={closeMenu}
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
-        <Menu.Item onPress={leaveClub} title='Leave Club' />
+        {(global.role !== 'p') ? <Menu.Item onPress={leaveClub} title='Leave Club' /> : null}
         <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
         <Menu.Item onPress={savePhoto} title='Save Poster' />
         <Menu.Item onPress={share} title='Other' />
@@ -481,7 +492,6 @@ const FilterMenu = props => {
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
-  //TO-DO, implement filters by reloading page and sorting queries in asc/desc order
   const selectFilterDesc = () => {
     console.log("filter 1");
     setFilter("A-Z");
