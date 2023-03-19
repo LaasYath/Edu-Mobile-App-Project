@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Modal, Portal, Switch, Text, TextInput } from 'react-native-paper';
 
+//hash funcs
+import { JSHash, JSHmac, CONSTANTS } from "react-native-hash";
+
 export const SettingsScreen = props => {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -56,8 +59,21 @@ const ChangePasswordModal = props => {
       return;
     }
 
+    const userQuery = new Parse.Query(global.school);
+    const userObj = await userQuery.get(global.id);
+    const pwdHash = userObj.get('passwordHash');
+
+    JSHash(newPswdText, CONSTANTS.HashAlgorithms.sha256)
+    .then(async(hash) => {
+      userObj.set('passwordHash', hash);
+    })
+    .catch(e => {
+      console.log("Error => " + e);
+    })
+
     return new Promise(res => setTimeout(() => {
       console.log("password reset");
+      alert("Password Reset Successfully!");
       onDismiss();
     }, 1000));
   }
