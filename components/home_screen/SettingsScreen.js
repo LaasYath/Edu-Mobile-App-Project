@@ -1,6 +1,12 @@
-import { useState } from 'react';
+import { useState, Linking } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Modal, Portal, Switch, Text, TextInput } from 'react-native-paper';
+import { Button, Modal, Portal, Text, TextInput } from 'react-native-paper';
+
+import { Camera } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+
+// import DeviceInfo from 'react-native-device-info';
+import * as IntentLauncher from 'expo-intent-launcher';
 
 //hash funcs
 import { JSHash, JSHmac, CONSTANTS } from "react-native-hash";
@@ -17,8 +23,8 @@ export const SettingsScreen = props => {
         <ChangePasswordModal visible={modalVisible} hideModal={hideModal}/>
       </Portal>
       <View style={styles.permSwitches}>
-        <CameraPermissionsSwitch />
-        <LibraryPermissionSwitch />
+        <CameraPermissionsButton />
+        <LibraryPermissionsButton />
       </View>
       <Button mode={'contained'} onPress={showModal} style={{ margin: 20 }}>
         Change Password
@@ -44,7 +50,6 @@ const ChangePasswordModal = props => {
     hideModal();
   }
 
-  // TODO: Implement async changePassword()
   const changePassword = async () => {
     setIsLoading(true);
     if (!oldPswdText || !newPswdText || !confPswdText) {
@@ -115,32 +120,48 @@ const ChangePasswordModal = props => {
   );
 }
 
-// TODO: Implement onToggleSwitch() for CameraPermissionsSwitch
-const CameraPermissionsSwitch = props => {
-  const [switchStatus, setSwitchStatus] = useState(false);
-  const onToggleSwitch = () => {
-    setSwitchStatus(!switchStatus)
-  };
+const CameraPermissionsButton = props => {
+  const onPress = async () => {
+    console.log("camera permissions requested")
+    // https://stackoverflow.com/questions/64769522/how-to-open-applications-location-permission-settings-directly-in-react-native
+    // https://docs.expo.dev/versions/latest/sdk/intent-launcher/
+    // const perm = await Camera.requestCameraPermissionsAsync();
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.PRIVACY_SETTINGS);
+    }
+  }
 
   return (
-    <View style={styles.permSwitch}>
-      <Text variant={'titleMedium'} style={styles.permText}>Allow Camera Usage</Text>
-      <Switch value={switchStatus} onValueChange={onToggleSwitch} style={styles.switch}/>
+    <View style={styles.permLayout}>
+      <Text variant={'titleMedium'} style={styles.permText}>Camera Settings</Text>
+      <Button 
+        mode='outlined'
+        onPress={onPress}
+        style={styles.button}
+      >Edit</Button>
     </View>
   )
 }
 
-// TODO: Implement onToggleSwitch() for LibraryPermissionsSwitch
-const LibraryPermissionSwitch = props => {
-  const [switchStatus, setSwitchStatus] = useState(false);
-  const onToggleSwitch = () => {
-    setSwitchStatus(!switchStatus)
-  };
+const LibraryPermissionsButton = props => {
+  const onPress = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.PRIVACY_SETTINGS);
+    }
+  }
 
   return (
-    <View style={styles.permSwitch}>
-      <Text variant={'titleMedium'} style={styles.permText}>Allow Library Usage</Text>
-      <Switch value={switchStatus} onValueChange={onToggleSwitch} style={styles.switch} />
+    <View style={styles.permLayout}>
+      <Text variant={'titleMedium'} style={styles.permText}>Library Settings</Text>
+      <Button 
+        mode='outlined'
+        onPress={onPress}
+        style={styles.button}
+      >Edit</Button>
     </View>
   )
 }
@@ -166,8 +187,7 @@ const styles = StyleSheet.create({
     height: 150,
     alignItems: 'center',
   },
-  permSwitch: {
-    height: 200,
+  permLayout: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -176,7 +196,8 @@ const styles = StyleSheet.create({
   permText: {
     marginTop: 25,
   },
-  switch: {
+  button: {
+    alignSelf: 'center',
   },
   modalStyle: {
     backgroundColor: 'white',
