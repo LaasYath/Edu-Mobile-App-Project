@@ -15,10 +15,6 @@ Parse.initialize('hd8SQBtMaTjacNWKfJ1rRWnZCAml1Rquec1S9xCV', 'Qn7JG5jASG6A45G5ac
 Parse.serverURL = 'https://edumediaapp.b4a.io/';
 Parse.enableLocalDatastore();
 
-(async () => {
-  global.toUser = "";
-})
-
 export const AnnouncementsScreen = props => {
   const navigation = props.navigation;
 

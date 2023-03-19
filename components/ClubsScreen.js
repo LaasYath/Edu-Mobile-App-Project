@@ -71,7 +71,6 @@ const UserClubCards = (props) => {
 
 // can just turn entire helper func into async
 async function getUserClubCards() {
-  /* implement getting all user clubs */
   /* RETURN FORMAT: [{
     clubTitle: str,
     clubDescription: str,
@@ -84,22 +83,25 @@ async function getUserClubCards() {
   let searchUser = global.school;
   const queryStudent = new Parse.Query(searchUser);
   //get student object of specific id 
-  let searchID;
-  if (global.role !== 'p') {
-    searchID = global.id;
+  let objectStudent;
+  if (global.role !== 'parent') {
+    objectStudent = await queryStudent.get(global.id);
   } else {
-    // idk if this actually works
     const parentObj = await queryStudent.get(global.id);
-    await parentObj.fetch();
-    console.log(parentObj.get("child1"))
-    searchID = parentObj.get("child1");
+
+    let childUID = parentObj.get("child1");
+
+    const userQuery2 = new Parse.Query(global.school);
+    userQuery2.equalTo('uID', Number(childUID));
+    const idResults = await userQuery2.find();
+
+    objectStudent = idResults[0];
   }
 
-  const objectStudent = await queryStudent.get(searchID);
   //save object data to reponse
   const responseStudent = await objectStudent.save();
   //store user's clubs
-  global.clubsList = responseStudent.get("clubs");
+  let clubsList = responseStudent.get("clubs");
 
   let name = "";
   let descrip = "";
@@ -249,8 +251,6 @@ const ClubCardPersonal = (props) => {
   );
 }
 
-//TO-DO: Once user leaves or joins club, resync front end to reflect user's change 
-
 const ClubOptionsMenuBrowse = (props) => {
   const clubInfo = props.clubData;
   const onJoin = props.onJoin;
@@ -359,7 +359,7 @@ const ClubOptionsMenuBrowse = (props) => {
         onDismiss={closeMenu}
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
-        {(global.role !== 'p') ? <Menu.Item onPress={joinClub} title='Join Club' /> : null}
+        {(global.role !== 'parent') ? <Menu.Item onPress={joinClub} title='Join Club' /> : null}
         <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
         <Menu.Item onPress={savePhoto} title='Save Poster' />
         <Menu.Item onPress={share} title='Other' />
@@ -475,7 +475,7 @@ const ClubOptionsMenuPersonal = (props) => {
         onDismiss={closeMenu}
         anchor={<IconButton icon="dots-vertical" onPress={openMenu}/>}
       >
-        {(global.role !== 'p') ? <Menu.Item onPress={leaveClub} title='Leave Club' /> : null}
+        {(global.role !== 'parent') ? <Menu.Item onPress={leaveClub} title='Leave Club' /> : null}
         <Menu.Item onPress={linkToInsta} title='Share to Instagram' />
         <Menu.Item onPress={savePhoto} title='Save Poster' />
         <Menu.Item onPress={share} title='Other' />
