@@ -15,6 +15,7 @@ Parse.serverURL = 'https://edumediaapp.b4a.io/';
 // Parse.enableLocalDatastore();
 
 
+
 export const ChatScreen = (props) => {
   // const to = props.to;
   // will allow "to" to be set when this
@@ -24,6 +25,14 @@ export const ChatScreen = (props) => {
   const to = params.to;
   const toName = params.toName;
   const fromName = params.fromName;
+
+  const navigation = props.navigation;
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Chat with " + toName,
+    });
+  });
 
   let toQuery1 = new Parse.Query(global.school + "Messages");
   toQuery1.equalTo('to', to);
@@ -88,23 +97,8 @@ export const ChatScreen = (props) => {
     message.set('to', to);
 
     message.save();
-  }, [])
+  }, []);
 
-  {/*<GiftedChat
-    messages={results && results.map(liveMessage => ({
-      _id: liveMessage.id,
-      text: liveMessage.get('content'),
-      createAt: liveMessage.get('createdAt'),
-      user: {
-        _id: 2,
-        name: 'React Native',
-      }
-    }))}
-    onSend={messages => onSend(messages)}
-    user={{
-      _id: 1,
-    }}
-  />*/}
   return (
     <View style={styles.layout}>
       <GiftedChat
@@ -134,5 +128,9 @@ const styles = StyleSheet.create({
   layout: {
     backgroundColor: '#f9f9f9',
     flex: 1,
+  },
+  title: {
+    alignSelf:'center',
+    fontSize: 30,
   }
 });

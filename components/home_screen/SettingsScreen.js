@@ -1,5 +1,5 @@
-import { useState, Linking } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, Linking } from 'react-native';
 import { Button, Modal, Portal, Text, TextInput } from 'react-native-paper';
 
 import { Camera } from 'expo-camera';
@@ -68,6 +68,18 @@ const ChangePasswordModal = props => {
     const userObj = await userQuery.get(global.id);
     const pwdHash = userObj.get('passwordHash');
 
+    JSHash(oldPswdText, CONSTANTS.HashAlgorithms.sha256)
+    .then(async(hash) => {
+      if (hash != pwdHash) {
+        setErrorText('Please make sure your old password is entered correctly');
+        setIsLoading(false);
+        return;
+      }
+    })
+    .catch(e => {
+      console.log("Error => " + e);
+    })
+
     JSHash(newPswdText, CONSTANTS.HashAlgorithms.sha256)
     .then(async(hash) => {
       userObj.set('passwordHash', hash);
@@ -127,7 +139,7 @@ const CameraPermissionsButton = props => {
     // https://docs.expo.dev/versions/latest/sdk/intent-launcher/
     // const perm = await Camera.requestCameraPermissionsAsync();
     if (Platform.OS === 'ios') {
-      Linking.openURL('app-settings:');
+      Linking.openSettings();
     } else {
       IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.PRIVACY_SETTINGS);
     }
@@ -148,7 +160,8 @@ const CameraPermissionsButton = props => {
 const LibraryPermissionsButton = props => {
   const onPress = () => {
     if (Platform.OS === 'ios') {
-      Linking.openURL('app-settings:');
+      console.log('got ios');
+      return Linking.openSettings();
     } else {
       IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.PRIVACY_SETTINGS);
     }

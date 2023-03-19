@@ -16,20 +16,45 @@ Parse.enableLocalDatastore();
 export const AnnouncementsScreen = props => {
   const navigation = props.navigation;
   const [userName, setUserName] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [parseQuery, setParseQuery] = useState(new Parse.Query(global.school));
+  const [results, setResults] = useState([]);
 
-  // TODO: Implement async onChangeSearch()
+  const resetParseQuery = () => {
+    let newQuery = new Parse.Query(global.school);
+    if (global.role == 'student' || global.role == 'parent') {
+      newQuery.equalTo('role', 'educator');
+    } else if (global.role == 'educator') {
+      newQuery.notEqualTo('role', 'educator');
+    }
+
+    setParseQuery(newQuery);
+  }
+
+  useEffect(() => {
+    resetParseQuery();
+  }, []);
+
   const onChangeSearch = async query => {
-    setSearchQuery(query);
+    setSearch(query);
+
+    if (!query)
+      resetParseQuery();
+    console.log(query);
   }
 
-  let parseQuery = new Parse.Query(global.school);
-  if (global.role == 'student' || global.role == 'parent') {
-    parseQuery.equalTo('role', 'educator');
-  } else if (global.role == 'educator') {
-    parseQuery.notEqualTo('role', 'educator');
+  const conductSearch = async () => {
+    //TODO an only set text value in 'onChangeSearch, need a sumbit button
+    if (search) {
+      let searchQuery = new Parse.Query(global.school);
+      searchQuery.startsWith('name', search.toString());
+      setParseQuery(Parse.Query.and(searchQuery, parseQuery));
+    } else {
+      resetParseQuery();
+    }
   }
 
+  /*
   const {
     isLive,
     isLoading,
@@ -39,6 +64,15 @@ export const AnnouncementsScreen = props => {
     error,
     reload
   } = useParseQuery(parseQuery);
+  */
+
+  useEffect(() => {
+    (async() => {
+      const result = await parseQuery.find();
+      // console.log(result);
+      setResults(result);
+    })();
+  }, [parseQuery]);
 
   // console.log(item.id);
   useEffect(() => {
@@ -46,7 +80,6 @@ export const AnnouncementsScreen = props => {
       const userQuery = new Parse.Query(global.school);
       const userObj = await userQuery.get(global.id);
 
-      console.log(userObj.get("name"));
       setUserName(userObj.get("name"));
     })();
   }, []);
@@ -56,7 +89,8 @@ export const AnnouncementsScreen = props => {
     <Searchbar
       placeholder='Search People'
       onChangeText={onChangeSearch}
-      value={searchQuery}
+      value={search}
+      onIconPress={conductSearch}
     />
     <FlatList
       data={results}
@@ -64,6 +98,8 @@ export const AnnouncementsScreen = props => {
       ItemSeparatorComponent={() => <Divider />}
       renderItem={({item}) => {
         const name = item.get('name');
+
+        global.to = name;
 
         return (<Button
           onPress={() => {
