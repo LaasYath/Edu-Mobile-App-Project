@@ -22,8 +22,12 @@ Parse.enableLocalDatastore();
 export const AnnouncementsScreen = props => {
   const navigation = props.navigation;
 
-  const parseQuery = new Parse.Query(global.school);
-  parseQuery.descending('createdAt');
+  let parseQuery = new Parse.Query(global.school);
+  if (global.role == 'student' || global.role == 'parent') {
+    parseQuery.equalTo('role', 'educator');
+  } else if (global.role == 'educator') {
+    parseQuery.notEqualTo('role', 'educator');
+  }
 
   const {
     isLive,
@@ -50,8 +54,8 @@ export const AnnouncementsScreen = props => {
           onPress={() => {
             // will be passed to:
             // props.route.params.to
-            navigation.navigate('Chat', {to: name}); 
-            console.log(`going to chat with ${name}`)
+            navigation.navigate('Chat', {to: item.id}); 
+            console.log(`going to chat with ${item.id}`)
           }}
           mode='text'
           contentStyle={styles.listItem}
@@ -60,7 +64,8 @@ export const AnnouncementsScreen = props => {
         >
           {name}
         </Button>
-      )}}
+        )
+      }}
     />
   </View>
   )
