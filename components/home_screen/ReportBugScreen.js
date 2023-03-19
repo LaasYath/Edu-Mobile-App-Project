@@ -16,17 +16,35 @@ export const ReportBugScreen = props => {
       return;
     }
 
-    return new Promise(res => setTimeout(() => {
-      console.log(`Bug Report Submitted:\n` +
-                  `Location: ${locationText}\n` +
-                  `Description: ${descText}`);
-      setErrorText("");
-      alert("Your report has been sent.")
-      setLocationText("");
-      setDescText("");
-      setIsLoading(false);
-      return;
-    }, 1000));
+    const newBug = new Parse.Object('ReportedBugs');
+    newBug.set('date', new Date());
+    newBug.set('location', locationText);
+    newBug.set('description', descText);
+    newBug.set('class', global.school);
+    newBug.set('objID', global.id);
+    try {
+      const result = await newBug.save();
+      // Access the Parse Object attributes using the .GET method
+      console.log('ReportedBugs created', result);
+      return new Promise(res => setTimeout(() => {
+        console.log(`Bug Report Submitted:\n` +
+                    `Location: ${locationText}\n` +
+                    `Description: ${descText}`);
+        setErrorText("");
+        alert("Your report has been sent.")
+        setLocationText("");
+        setDescText("");
+        setIsLoading(false);
+        return;
+      }, 1000));
+    } catch (error) {
+      console.error('Error while creating ReportedBugs: ', error);
+      return new Promise(res => setTimeout(() => {
+        setErrorText("Something went wrong. Please try again");
+        setIsLoading(false);
+        return;
+      }, 1000));
+    }
   }
 
   return (
@@ -67,6 +85,7 @@ export const ReportBugScreen = props => {
 const styles = StyleSheet.create({
   layout: {
     marginHorizontal: 10,
+    paddingBottom: 100,
   },
   title: {
     alignSelf: 'center',
