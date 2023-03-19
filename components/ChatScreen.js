@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -79,27 +79,32 @@ export const ChatScreen = (props) => {
 
     setMessages(previousMessages => GiftedChat.append(previousMessages, message));
   }, [to])
-
+  
   return (
     <View style={styles.layout}>
-      <GiftedChat
-        messages={messages && messages.map(liveMessage => {
-          return ({
-            _id: liveMessage.id,
-            text: liveMessage.get('content'),
-            createdAt: liveMessage.get('createdAt'),
-            user: {
-              _id: (liveMessage.get('to') === to) ? 1 : 2,
-              name: (liveMessage.get('to') === to) ? fromName : toName,
-            }
-          });
-        })}
-        onSend={messages => onSend(messages)}
-        user={{
-          _id: 1,
-          name: fromName,
-        }}
-      />
+      {(messages?.length) ? <GiftedChat
+          messages={messages && messages.map(liveMessage => {
+            return ({
+              _id: liveMessage.id,
+              text: liveMessage.get('content'),
+              createdAt: liveMessage.get('createdAt'),
+              user: {
+                _id: (liveMessage.get('to') === to) ? 1 : 2,
+                name: (liveMessage.get('to') === to) ? fromName : toName,
+              }
+            });
+          })}
+          onSend={messages => onSend(messages)}
+          user={{
+            _id: 1,
+            name: fromName,
+          }}
+        /> : 
+        <ActivityIndicator 
+          animating={true} 
+          style={{ marginTop: 10, marginBottom: 10 }}
+        />
+      }
     </View>
   )
 }
