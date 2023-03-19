@@ -114,7 +114,7 @@ const HomeMainSubScreen = props => {
         <Divider style={{ margin: 5 }}/>
         {cards}
       </View> :
-      <Text style={styles.welcome}> Welcome! </Text>
+      <Text style={styles.welcome}> Welcome Admin! </Text>
       }
     </ScrollView>
   );
@@ -149,7 +149,7 @@ const Options = props => {
         <Option
           icon={'calendar-remove'}
           onPress={() => navigation.navigate('Report Absence')}
-          caption={'Report Absence'}
+          caption={(global.role === 'admin') ? 'View Absences' : 'Report Absence'}
         />
         <Option 
           icon={'cellphone'}

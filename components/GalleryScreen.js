@@ -332,20 +332,7 @@ const ImageList = (props) => {
       )
     });
 
-    const imgMatrix = Array(Math.floor(imgComponents.length / 3) + 1).fill(null);
-    for (let row = 0; row < imgMatrix.length; row++) {
-      const imgRow = Array(3).fill(null);
-      
-      for (let col = 0; col < 3; col++) {
-        imgRow[col] = imgComponents[(row * 3) + col] ? 
-                        imgComponents[(row * 3) + col] : 
-                        <View style={styles.imgHolder} key={(row * 3) + col} />;
-      }
-
-      imgMatrix[row] = <View style={styles.imgRowLayout} key={row}>{imgRow}</View>;
-    }
-
-    setImages(<View style={styles.imgMatrixLayout}>{imgMatrix}</View>);
+    setImages(<View style={styles.imgMatrixLayout}>{imgComponents}</View>)
   }
 
   useEffect(() => {
@@ -425,12 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   imgMatrixLayout: {
-    marginBottom: 150,
-  },
-  imgRowLayout: { 
-    flex: 1, 
-    flexDirection: "row", 
-    width: "100%",
+    width: '100%',
   },
   menuContainer: {
     flex: 1,
@@ -447,15 +429,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 5,
     margin: 5,
+    alignSelf: 'stretch',
   },
   imgCardContent: {
     marginTop: 10,
   },
   imgCardText: {
     marginTop: 5,
-  },
-  imgHolder: {
-    flex: 1,
   },
   container: {
     flex: 1,
