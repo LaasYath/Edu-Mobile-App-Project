@@ -54,12 +54,12 @@ storage.save({
   expires: 1000 * 3600
 });
 
-export const CalendarScreen = (props) => {
+export const CalendarScreen = props => {
   // controls highlighting of calendar
   const [customDates, setCustomDates] = useState([]);
   // controls ALL of user's events
   // format: dictionary of moment.calendar() to card
-  const [allDates, setAllDates] = useState([]);
+  const [allDates, setAllDates] = useState({});
   // controls the displaying of cards for given date when date is selected
   const [dateCards, setDateCards] = useState(<ActivityIndicator 
     animating={true} 
