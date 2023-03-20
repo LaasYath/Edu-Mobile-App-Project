@@ -82,7 +82,7 @@ export const ChatScreen = (props) => {
   
   return (
     <View style={styles.layout}>
-      {(messages?.length) ? <GiftedChat
+      {<GiftedChat
           messages={messages && messages.map(liveMessage => {
             return ({
               _id: liveMessage.id,
@@ -99,11 +99,7 @@ export const ChatScreen = (props) => {
             _id: 1,
             name: fromName,
           }}
-        /> : 
-        <ActivityIndicator 
-          animating={true} 
-          style={{ marginTop: 10, marginBottom: 10 }}
-        />
+        /> 
       }
     </View>
   )
