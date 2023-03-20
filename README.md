@@ -1,4 +1,6 @@
-# EduMedia <img src="splashPage.PNG" width="200" height="400"/>
+# EduMedia 
+<img src="splashPage.PNG" width="200" height="400"/>
+
 Logo created by Cindy Tran, 2023. (cindytran204@gmail.com)
 
 EduMedia is a cross-platform mobile application that connects students, parents, and educators by offering a platform to meet everyone's school-related needs. Communicate with teachers quickly using our live chat feature, browse offered clubs, view upcoming events, post pictures to school/club-wide galleries and so much more!
@@ -45,6 +47,27 @@ The `Gallery` screen lets users upload pictures to differnt clubs. Students can 
 - ExpoGo
 - Github
 - VSCode
+
+## Packages
+- Expo
+- ExpoCamera
+- ExpoIntentLauncher
+- ExpoMediaLibrary
+- ExpoSharing
+- ExpoStatusBar
+- Parse
+- MaskedView
+- ReactNavigation
+- ReactNative
+- ReactNativeAsyncStorage
+- ReactNativeCalendarPicker
+- ReactNativeGiftedChat
+- ReactNativeHash
+- ReactNativePaper
+- ReactNativeScreens
+- ReactNativeStorage
+- DateFns
+- Moment
 
 ## License
 - &copy; 2022 Laasya Yatham, Marcus Alagar. All rights reserved.
