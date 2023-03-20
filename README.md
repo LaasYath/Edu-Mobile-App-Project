@@ -49,6 +49,7 @@ The `Gallery` screen lets users upload pictures to differnt clubs. Students can 
 - VSCode
 
 ## Packages
+- DateFns
 - Expo
 - ExpoCamera
 - ExpoIntentLauncher
@@ -57,16 +58,19 @@ The `Gallery` screen lets users upload pictures to differnt clubs. Students can 
 - ExpoStatusBar
 - Parse
 - MaskedView
+- React
 - ReactNavigation
 - ReactNative
 - ReactNativeAsyncStorage
 - ReactNativeCalendarPicker
+- ReactNativeCalendars
+- ReactNativeGestureHandler
 - ReactNativeGiftedChat
 - ReactNativeHash
 - ReactNativePaper
 - ReactNativeScreens
 - ReactNativeStorage
-- DateFns
+- ReactNavigation
 - Moment
 
 ## License
