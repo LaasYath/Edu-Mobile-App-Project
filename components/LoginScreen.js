@@ -46,9 +46,6 @@ export const LoginScreen = (props) => {
             </Text>
           </View>
           <View>
-            {/* <Text style={styles.title}>
-              Login
-            </Text> */}
             <TextInput style={styles.textInput}
               label="School"
               value={schoolText}
@@ -201,7 +198,7 @@ const NewAccountModal = props => {
         .then(hash1 => {
           JSHash(confirmPwdText, CONSTANTS.HashAlgorithms.sha256)
             .then(hash2 => {
-              if (hash1==hash2) {
+              if (hash1 == hash2) {
                 makeNewUser(hash1);
               }
             })
@@ -213,9 +210,9 @@ const NewAccountModal = props => {
       //user class used to utilize built in sign up function (has email verification and password reset)
       const makeNewUser = async(hash) => {
         const user = new Parse.User();
-        user.set('username', 'Scott Disick');
-        user.set('email', 'laasyath@gmail.com');
-        user.set('password', 'password');
+        user.set('username', nameText);
+        user.set('email', emailText);
+        user.set('password', hash);
       
         try {
           let userResult = await user.signUp();
@@ -229,7 +226,7 @@ const NewAccountModal = props => {
             newParent.set('role', 'parent');
             newParent.set("objID", user.id);
             //TO-DO need to create a point object instead of a regular pointer
-            newParent.set('child1', new Parse.Object(schoolClassName));
+            newParent.set('child1', IDText);
             const result = await newParent.save();
 
             alert("Your account has been created! Please verify your account via email before logging in.");
