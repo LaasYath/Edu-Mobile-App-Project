@@ -69,6 +69,17 @@ The `Gallery` screen lets users upload pictures to differnt clubs. Students can 
 - DateFns
 - Moment
 
+## Copyrighted Images
+All `Gallery` Images fall under public domain.
+
+- Management. Chess Club Poster. 2023. Corrales Public Library, https://www.corraleslibrary.org/library/page/chess-club-0
+- Management. Creative Writing Club Poster. 2023. Jake Epp Library, https://jakeepplibrary.com/explore/write-or-wrong-creative-writing-group/
+- Platte County High School. FBLA Club Poster. 2018. Twitter, https://twitter.com/fblapc/status/1033114377468215297
+
+## Templates
+- Management. "Robotics Club Poster Template". My Creative Shop, 14 Feb 2023 https://www.mycreativeshop.com/robotics-club-poster-template
+- Management. "Purple App Phone Mockup Sales Marketing Video Presentation". Canva, 15 March 2023 https://www.canva.com/design/DAFEvL5aG4Q/kOCoTIETjEb4ItMUfwOPmA/view?utm_content=DAFEvL5aG4Q&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview
+
 ## License
 - &copy; 2022 Laasya Yatham, Marcus Alagar. All rights reserved.
 
